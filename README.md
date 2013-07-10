@@ -1,4 +1,0 @@
-osteoclasts
-===========
-
-Count osteoclasts.
