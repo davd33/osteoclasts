@@ -5,17 +5,14 @@
 package org.osteo.gui;
 
 import ij.ImagePlus;
-import imagej.ImageJ;
 import imagej.data.Dataset;
 import imagej.data.display.DefaultImageDisplay;
-import imagej.io.IOService;
 import imagej.ui.swing.sdi.viewer.SwingDisplayWindow;
 import imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
 import imagej.ui.swing.viewer.image.SwingDisplayPanel;
 import imagej.ui.swing.viewer.image.SwingImageDisplayViewer;
 import org.osteo.gui.listeners.ImagePlusPanelListener;
 import org.osteo.main.App;
-import org.scijava.Context;
 import org.scijava.thread.ThreadService;
 
 import javax.swing.*;
@@ -29,6 +26,15 @@ public class ImagePlusPanel extends JPanel {
     private ImagePlus ip;
     private File file;
     protected static ImagePlusPanelListener imgListener;
+    protected DefaultImageDisplay imageDisplay;
+
+    public DefaultImageDisplay getImageDisplay() {
+        if (imageDisplay == null) {
+            imageDisplay = new DefaultImageDisplay();
+            imageDisplay.setContext(App.getIoService().getContext());
+        }
+        return this.imageDisplay;
+    }
 
     public ImagePlus getIp() {
         return ip;
@@ -52,44 +58,43 @@ public class ImagePlusPanel extends JPanel {
         this.file = ip; //
 
         removeAll();
-        if (ip != null) {
+
 //            this.add(new JLabel(new ImageIcon(this.ip.getImage())));
 
-            try {
-                final String path = this.file.getAbsolutePath();
-                final Dataset data = App.getIoService().loadDataset(path);
-                final DefaultImageDisplay display = new DefaultImageDisplay();
-                display.setContext(App.getIoService().getContext());
-                display.display(data);
+        try {
+            final String path = this.file.getAbsolutePath();
+            final Dataset data = App.getIoService().loadDataset(path);
 
-                final ThreadService threadService = App.getImageJ().get(ThreadService.class);
-                threadService.queue(new Runnable() {
+            getImageDisplay().display(data);
 
-                    @Override
-                    public void run() {
-                        final SwingImageDisplayViewer displayViewer = new SwingSdiImageDisplayViewer();
-                        displayViewer.setContext(App.getImageJ().getContext());
-                        App.getImageJ().ui().addDisplayViewer(displayViewer);
-                        final SwingDisplayWindow displayWindow = new SwingDisplayWindow();
-                        displayViewer.view(displayWindow, display);
-                        final SwingDisplayPanel displayPanel = displayViewer.getPanel();
+            final ThreadService threadService = App.getImageJ().get(ThreadService.class);
+            threadService.queue(new Runnable() {
+
+                @Override
+                public void run() {
+                    final SwingImageDisplayViewer displayViewer = new SwingSdiImageDisplayViewer();
+                    displayViewer.setContext(App.getImageJ().getContext());
+                    App.getImageJ().ui().addDisplayViewer(displayViewer);
+                    final SwingDisplayWindow displayWindow = new SwingDisplayWindow();
+                    displayViewer.view(displayWindow, imageDisplay);
+                    final SwingDisplayPanel displayPanel = displayViewer.getPanel();
 //                        displayPanel.repaint();
 //                        displayPanel.setSize(100, 100);
-                        displayPanel.redoLayout();
-                        displayPanel.redraw();
+                    displayPanel.redoLayout();
+                    displayPanel.redraw();
 
-                        // add mouse events
-                        imgListener = new ImagePlusPanelListener();
-                        imgListener.setContext(App.getIJContext());
+                    // add mouse events
+                    imgListener = new ImagePlusPanelListener(ImagePlusPanel.this);
+                    imgListener.setContext(App.getIJContext());
 
-                        ImagePlusPanel.this.add(displayPanel);
-                        ImagePlusPanel.this.updateUI();
-                    }
-                });
-            } catch (Exception e) {
-                App.log("impossible to display the selected image.");
-            }
+                    ImagePlusPanel.this.add(displayPanel);
+                    ImagePlusPanel.this.updateUI();
+                }
+            });
+        } catch (Exception e) {
+            App.log(e.getMessage());
         }
+
         updateUI();
     }
 }
