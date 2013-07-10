@@ -7,6 +7,7 @@ package org.osteo.gui;
 import ij.ImagePlus;
 import imagej.data.Dataset;
 import imagej.data.display.DefaultImageDisplay;
+import imagej.data.overlay.Overlay;
 import imagej.ui.swing.sdi.viewer.SwingDisplayWindow;
 import imagej.ui.swing.sdi.viewer.SwingSdiImageDisplayViewer;
 import imagej.ui.swing.viewer.image.SwingDisplayPanel;
@@ -27,6 +28,11 @@ public class ImagePlusPanel extends JPanel {
     private File file;
     protected static ImagePlusPanelListener imgListener;
     protected DefaultImageDisplay imageDisplay;
+    protected SwingDisplayPanel displayPanel;
+
+    public SwingDisplayPanel getDisplayPanel() {
+        return this.displayPanel;
+    }
 
     public DefaultImageDisplay getImageDisplay() {
         if (imageDisplay == null) {
@@ -45,12 +51,6 @@ public class ImagePlusPanel extends JPanel {
     }
 
     public ImagePlusPanel() {
-    }
-
-    public ImagePlusPanel(File ip) {
-        this.ip = new ImagePlus(ip.getAbsolutePath());
-        this.file = ip;
-        this.setAutoscrolls(true);
     }
 
     public void update(File ip) {
@@ -76,8 +76,8 @@ public class ImagePlusPanel extends JPanel {
                     displayViewer.setContext(App.getImageJ().getContext());
                     App.getImageJ().ui().addDisplayViewer(displayViewer);
                     final SwingDisplayWindow displayWindow = new SwingDisplayWindow();
-                    displayViewer.view(displayWindow, imageDisplay);
-                    final SwingDisplayPanel displayPanel = displayViewer.getPanel();
+                    displayViewer.view(displayWindow, getImageDisplay());
+                    displayPanel = displayViewer.getPanel();
 //                        displayPanel.repaint();
 //                        displayPanel.setSize(100, 100);
                     displayPanel.redoLayout();

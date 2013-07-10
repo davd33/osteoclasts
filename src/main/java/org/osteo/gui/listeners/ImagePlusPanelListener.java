@@ -3,6 +3,8 @@ package org.osteo.gui.listeners;
 import imagej.data.overlay.Overlay;
 import imagej.data.overlay.PointOverlay;
 import imagej.display.event.input.MsEvent;
+import imagej.display.event.input.MsPressedEvent;
+import imagej.display.event.input.MsReleasedEvent;
 import org.osteo.gui.ImagePlusPanel;
 import org.osteo.main.App;
 import org.scijava.AbstractContextual;
@@ -56,33 +58,39 @@ public class ImagePlusPanelListener extends AbstractContextual {
 
     @EventHandler
     public void onEvent(final MsEvent mouseEvent) {
-        if (mouseEvent.getModifiers().isLeftButtonDown()) {
+        if (mouseEvent instanceof MsPressedEvent && mouseEvent.getModifiers().isLeftButtonDown()) {
             setCurrentPos(new Point(mouseEvent.getX(), mouseEvent.getY()));
 
             // start making ROI
             ROIPoints.add(new Point(getCurrentPos()));
 
             setPreviousPos(getCurrentPos());
-        } else if (getPreviousPos() != null) {
+        } else if (mouseEvent instanceof MsReleasedEvent && getPreviousPos() != null) {
             setCurrentPos(new Point(mouseEvent.getX(), mouseEvent.getY()));
 
             // create overlay
-            final PointOverlay points = new PointOverlay();
+            final PointOverlay pointsOverlay = new PointOverlay();
             int i = 0;
+            List<double[]> pointsDouble = new ArrayList<double[]>();
             for (Iterator<Point> pIt = ROIPoints.iterator(); pIt.hasNext(); ) {
                 Point p = pIt.next();
-                points.setPoint(i, new double[] { p.getX(), p.getY() });
+                pointsDouble.add(new double[]{p.getX(), p.getY()});
                 i++;
             }
+            pointsOverlay.setPoints(pointsDouble);
 
 //            parent.getImageDisplay().
-            List<Overlay> overlays = new ArrayList<Overlay>();
-            overlays.add(points);
-
-            System.out.println(points);
-            App.getImageJ().overlay().addOverlays(parent.getImageDisplay(), overlays);
+            final List<Overlay> overlays = new ArrayList<Overlay>();
+            overlays.add(pointsOverlay);
 
             clearPos();
+
+            System.out.println(pointsOverlay);
+//            App.getImageJ().overlay().addOverlays(parent.getImageDisplay(), overlays);
+            App.getImageJ().ui().show(parent.getImageDisplay());
+
+            parent.getDisplayPanel().redoLayout();
+            parent.getDisplayPanel().redraw();
         }
     }
 }
