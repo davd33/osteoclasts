@@ -37,24 +37,18 @@ public class App {
      * Interface resource bundle.
      */
     public static final Bundle UI = Bundle.UI;
-    protected static ImageJ imagej;
-    protected static IOService ioService;
+    protected final static ImageJ imagej = new ImageJ();
+    protected final static IOService ioService = getImageJ().io();
 
     public static Context getIJContext() {
         return getImageJ().getContext();
     }
 
-    public static ImageJ getImageJ() {
-        if (imagej == null) {
-            imagej = new ImageJ();
-        }
+    public synchronized static ImageJ getImageJ() {
         return imagej;
     }
 
-    public static IOService getIoService() {
-        if (ioService == null) {
-            ioService = getImageJ().io();
-        }
+    public synchronized static IOService getIoService() {
         return ioService;
     }
 
@@ -64,16 +58,16 @@ public class App {
      * @param args shell input arguments
      */
     public static void main(String[] args) {
-        if (false) {
+        if (true) {
             final ImageJ imagej = new ImageJ();
+            imagej.ui().showUI();
             final IOService ioService = imagej.io();
             try {
                 final String path = args.length > 0 ? args[0] :
-                    "/home/bioinf/davidr/Downloads/anaJune13/GSKexp.11.1.2012Don2/PROBFiles Don2exp.11.1.2012/M25+R5+100nM5541_10xA_PROB.TIF";
+//                        "/home/bioinf/davidr/3.tif";
+                        "/home/bioinf/davidr/M+R25 10nMEnbrel + 10ngmLTNFa 10x centerbNegative.tif";
                 final Dataset data = ioService.loadDataset(path);
-                final DefaultImageDisplay display = new DefaultImageDisplay();
-                display.setContext(ioService.getContext());
-                display.display(data);
+                final DefaultImageDisplay display = (DefaultImageDisplay) imagej.display().createDisplay(data);
 
                 final ThreadService threadService = imagej.get(ThreadService.class);
                 threadService.queue(new Runnable() {
@@ -83,7 +77,7 @@ public class App {
                         final SwingImageDisplayViewer displayViewer = new SwingSdiImageDisplayViewer();
                         displayViewer.setContext(imagej.getContext());
                         imagej.ui().addDisplayViewer(displayViewer);
-                            final SwingDisplayWindow displayWindow = new SwingDisplayWindow();
+                        final SwingDisplayWindow displayWindow = new SwingDisplayWindow();
                         displayViewer.view(displayWindow, display);
                         final SwingDisplayPanel displayPanel = displayViewer.getPanel();
 

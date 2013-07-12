@@ -5,6 +5,7 @@
 package org.osteo.gui;
 
 import ij.ImagePlus;
+import imagej.core.tools.PaintBrushTool;
 import imagej.data.Dataset;
 import imagej.data.display.DefaultImageDisplay;
 import imagej.data.overlay.Overlay;
@@ -84,11 +85,13 @@ public class ImagePlusPanel extends JPanel {
                     displayPanel.redraw();
 
                     // add mouse events
-                    imgListener = new ImagePlusPanelListener(ImagePlusPanel.this);
-                    imgListener.setContext(App.getIJContext());
+//                    imgListener = new ImagePlusPanelListener(ImagePlusPanel.this);
+//                    imgListener.setContext(App.getIJContext());
 
                     ImagePlusPanel.this.add(displayPanel);
                     ImagePlusPanel.this.updateUI();
+
+                    App.getImageJ().ui().getToolService().getTool(PaintBrushTool.class);
                 }
             });
         } catch (Exception e) {

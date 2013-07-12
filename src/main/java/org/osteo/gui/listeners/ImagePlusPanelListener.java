@@ -86,8 +86,9 @@ public class ImagePlusPanelListener extends AbstractContextual {
             clearPos();
 
             System.out.println(pointsOverlay);
-//            App.getImageJ().overlay().addOverlays(parent.getImageDisplay(), overlays);
-            App.getImageJ().ui().show(parent.getImageDisplay());
+            App.getImageJ().overlay().addOverlays(parent.getImageDisplay(), overlays);
+//            App.getImageJ().ui().show(parent.getImageDisplay());
+            System.out.println("then make the ROI");
 
             parent.getDisplayPanel().redoLayout();
             parent.getDisplayPanel().redraw();
