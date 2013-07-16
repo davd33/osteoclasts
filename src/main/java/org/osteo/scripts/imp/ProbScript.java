@@ -26,6 +26,8 @@ import org.osteo.gui.ScriptFrame;
 
 import org.osteo.gui.filters.ImagesFilter;
 import org.osteo.ij.morph.GrayMorphology_;
+import org.osteo.io.ImagePlusWriter;
+import org.osteo.main.App;
 import org.osteo.main.Bundle;
 import org.osteo.scripts.AbstractScript;
 import org.osteo.scripts.util.Option;
@@ -205,7 +207,7 @@ public class ProbScript extends AbstractScript {
         return finalImg;
     }
 
-    private void runAnalysis(OptionSet os, String subdirectory) throws ScriptException, IOException {
+    private void runAnalysis(OptionSet os, String subdirectory) throws ScriptException, IOException, IllegalAccessException {
         if (getImp().getProcessor().getNChannels() > 1) {
             throw new ScriptException(
                     Bundle.UI.getString("message_grayonly"));
@@ -250,7 +252,15 @@ public class ProbScript extends AbstractScript {
         }
 
         synchronized (ProbScript.class) {
-            IJ.saveAs(mask, "Tiff", genName(getFile(), "_MASK.TIF", subdirectory));
+            try {
+                IJ.saveAs(mask, "Tiff", genName(getFile(), "_MASK.TIF", subdirectory));
+            } catch (Exception e) {
+                App.log("error saving overlay..");
+                App.log(e.getMessage());
+                throw new ScriptException(e.getMessage());
+            }
+//            ImagePlusWriter ipw = new ImagePlusWriter();
+//            ipw.saveTiff(mask, genName(getFile(), "_MASK.TIF", subdirectory));
         }
     }
 
@@ -277,6 +287,9 @@ public class ProbScript extends AbstractScript {
             String message = getErrorMessage(e);
             throw new ScriptException(message);
         } catch (IOException e) {
+            String message = getErrorMessage(e);
+            throw new ScriptException(message);
+        } catch (IllegalAccessException e) {
             String message = getErrorMessage(e);
             throw new ScriptException(message);
         }

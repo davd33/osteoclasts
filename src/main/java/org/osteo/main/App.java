@@ -58,7 +58,7 @@ public class App {
      * @param args shell input arguments
      */
     public static void main(String[] args) {
-        if (true) {
+        if (false) {
             final ImageJ imagej = new ImageJ();
             imagej.ui().showUI();
             final IOService ioService = imagej.io();

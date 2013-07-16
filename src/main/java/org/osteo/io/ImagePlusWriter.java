@@ -2,6 +2,7 @@ package org.osteo.io;
 
 import ij.ImagePlus;
 import ij.io.TiffEncoder;
+import org.osteo.main.App;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -46,10 +47,15 @@ public class ImagePlusWriter {
 			out = new DataOutputStream(new BufferedOutputStream(
 					new FileOutputStream(path)));
 			file.write(out);
-		} finally {
-			out.close();
+		} catch (IOException e) {
+            App.log("!NOT saved: " + this.path);
+            throw e;
+        } finally {
+            if (out != null)
+			    out.close();
 		}
-	}
+        App.log("saved: " + this.path);
+    }
 
 	public void saveTiff(String path) throws IllegalAccessException,
 			IOException {

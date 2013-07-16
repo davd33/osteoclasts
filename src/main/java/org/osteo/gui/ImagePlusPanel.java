@@ -62,41 +62,41 @@ public class ImagePlusPanel extends JPanel {
 
 //            this.add(new JLabel(new ImageIcon(this.ip.getImage())));
 
-        try {
-            final String path = this.file.getAbsolutePath();
-            final Dataset data = App.getIoService().loadDataset(path);
-
-            getImageDisplay().display(data);
-
-            final ThreadService threadService = App.getImageJ().get(ThreadService.class);
-            threadService.queue(new Runnable() {
-
-                @Override
-                public void run() {
-                    final SwingImageDisplayViewer displayViewer = new SwingSdiImageDisplayViewer();
-                    displayViewer.setContext(App.getImageJ().getContext());
-                    App.getImageJ().ui().addDisplayViewer(displayViewer);
-                    final SwingDisplayWindow displayWindow = new SwingDisplayWindow();
-                    displayViewer.view(displayWindow, getImageDisplay());
-                    displayPanel = displayViewer.getPanel();
-//                        displayPanel.repaint();
-//                        displayPanel.setSize(100, 100);
-                    displayPanel.redoLayout();
-                    displayPanel.redraw();
-
-                    // add mouse events
-//                    imgListener = new ImagePlusPanelListener(ImagePlusPanel.this);
-//                    imgListener.setContext(App.getIJContext());
-
-                    ImagePlusPanel.this.add(displayPanel);
-                    ImagePlusPanel.this.updateUI();
-
-                    App.getImageJ().ui().getToolService().getTool(PaintBrushTool.class);
-                }
-            });
-        } catch (Exception e) {
-            App.log(e.getMessage());
-        }
+//        try {
+//            final String path = this.file.getAbsolutePath();
+//            final Dataset data = App.getIoService().loadDataset(path);
+//
+//            getImageDisplay().display(data);
+//
+//            final ThreadService threadService = App.getImageJ().get(ThreadService.class);
+//            threadService.queue(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    final SwingImageDisplayViewer displayViewer = new SwingSdiImageDisplayViewer();
+//                    displayViewer.setContext(App.getImageJ().getContext());
+//                    App.getImageJ().ui().addDisplayViewer(displayViewer);
+//                    final SwingDisplayWindow displayWindow = new SwingDisplayWindow();
+//                    displayViewer.view(displayWindow, getImageDisplay());
+//                    displayPanel = displayViewer.getPanel();
+////                        displayPanel.repaint();
+////                        displayPanel.setSize(100, 100);
+//                    displayPanel.redoLayout();
+//                    displayPanel.redraw();
+//
+//                    // add mouse events
+////                    imgListener = new ImagePlusPanelListener(ImagePlusPanel.this);
+////                    imgListener.setContext(App.getIJContext());
+//
+//                    ImagePlusPanel.this.add(displayPanel);
+//                    ImagePlusPanel.this.updateUI();
+//
+//                    App.getImageJ().ui().getToolService().getTool(PaintBrushTool.class);
+//                }
+//            });
+//        } catch (Exception e) {
+//            App.log(e.getMessage());
+//        }
 
         updateUI();
     }
