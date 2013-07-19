@@ -2,17 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.mycompany</groupId>
+  <groupId>org.osteo.ij.plugin</groupId>
   <artifactId>OsteoPlugin</artifactId>
   <version>beta</version>
   <packaging>jar</packaging>
-  
-	<parent>
-		<groupId>org.scijava</groupId>
-		<artifactId>pom-scijava</artifactId>
-		<version>1.51</version>
-		<relativePath/>
-	</parent>
 
   <name>OsteoPlugin</name>
   <url>http://maven.apache.org</url>
@@ -20,7 +13,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <imagej.path>/home/bioinf/davidr/Downloads/ImageJ</imagej.path>
+    <imagej.path>/home/davd33/Downloads/ImageJ</imagej.path>
   </properties>
   
   <build>
@@ -74,9 +67,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>net.imagej</groupId>
-        <artifactId>ij-app</artifactId>
-        <version>${imagej.version}</version>
+        <groupId>gov.nih.imagej</groupId>
+        <artifactId>imagej</artifactId>
+        <version>1.47</version>
     </dependency>
   </dependencies>
 </project>
