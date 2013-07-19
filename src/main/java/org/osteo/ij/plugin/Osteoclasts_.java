@@ -113,7 +113,17 @@ public class Osteoclasts_ implements PlugInFilter {
             public void actionPerformed(ActionEvent ae) {
                 JButton source = (JButton) ae.getSource();
                 
-                
+                if (source.getText().equals(Actions.PA.getName())) {
+                    System.out.println("particle analysis");
+                } else if (source.getText().equals(Actions.CLASS.getName())) {
+                    System.out.println("classifier");
+                } else if (source.getText().equals(Actions.OPEN.getName())) {
+                    System.out.println("open images");
+                } else if (source.getText().equals(Actions.OPTIONS.getName())) {
+                    System.out.println("options");
+                } else if (source.getText().equals(Actions.OVERLAYS.getName())) {
+                    System.out.println("overlays");
+                }
             }
         };
         
