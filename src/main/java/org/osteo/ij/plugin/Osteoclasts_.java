@@ -136,6 +136,27 @@ public class Osteoclasts_ implements PlugInFilter {
         miniWin.getContentPane().add(actionsPanel);
         miniWin.pack();
     }
+    
+    private void classify() {
+        //
+    }
+    
+    private void options() {
+        //
+    }
+    
+    private void overlays() {
+        //
+    }
+    
+    private void open() {
+        //
+    }
+    
+    private void pa() {
+        Overlay o = imp.getOverlay();
+        o.
+    }
 
     private void log(String message) {
         System.out.println(message);
