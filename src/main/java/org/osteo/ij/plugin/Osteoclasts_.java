@@ -5,37 +5,29 @@
 package org.osteo.ij.plugin;
 
 import ij.IJ;
+import ij.IJEventListener;
 import ij.ImagePlus;
 import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
-import ij.plugin.ChannelSplitter;
-import ij.plugin.Converter;
+import ij.plugin.EventListener;
 import ij.plugin.ImageCalculator;
-import ij.plugin.Thresholder;
+import ij.plugin.PlugIn;
 import ij.plugin.filter.ParticleAnalyzer;
-import ij.plugin.filter.PlugInFilter;
 import ij.plugin.frame.RoiManager;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -48,16 +40,12 @@ import javax.swing.SwingUtilities;
  *
  * @author davidr
  */
-public class Osteoclasts_ implements PlugInFilter {
+public class Osteoclasts_ implements PlugIn {
 
-    /**
-     * Main Image. Does not handle stacks yet.
-     */
-    private ImagePlus imp;
     /**
      * Little window with a few buttons.
      */
-    private JFrame miniWin;
+    private static JFrame miniWin;
     private JPanel miniWinInfosPanel;
     /**
      * One unique color for managing overlays.
@@ -68,17 +56,14 @@ public class Osteoclasts_ implements PlugInFilter {
      */
     protected final static double INFINITY = 1.0 / 0.0;
 
+    private ImagePlus getCurrentImp() {
+        return IJ.getImage();
+    }
+
     /**
-     * The plugin is given an image. It does not manage with stacks yet.
-     *
-     * @param arg useless for now
-     * @param imp
-     * @return
+     * Basic constructor.
      */
-    @Override
-    public int setup(String arg, ImagePlus imp) {
-        this.imp = imp;
-        return DOES_ALL;
+    public Osteoclasts_() {
     }
 
     /**
@@ -87,35 +72,21 @@ public class Osteoclasts_ implements PlugInFilter {
      * @param ip
      */
     @Override
-    public void run(ImageProcessor ip) {
-        runMiniWin();
-        logToMiniWin("Welcome Ana! ;)");
-
-        if (imp.getOverlay() == null) {
-            imp.setOverlay(new Overlay());
+    public void run(String arg) {
+        if (miniWin == null) {
+            runMiniWin();
+            logToMiniWin("Welcome Ana! ;)");
+        } else {
+            miniWin.setVisible(true);
         }
         
-        this.imp.getWindow().addWindowListener(new WindowListener() {
-            public void windowOpened(WindowEvent we) {
-            }
+        IJ.run("Labels...", "color=blue font=12 show draw");
+        IJ.run("Overlay Options...", "stroke=yellow width=2 fill=none");
+        
+        IJ.addEventListener(new IJEventListener() {
 
-            public void windowClosing(WindowEvent we) {
-            }
-
-            public void windowClosed(WindowEvent we) {
-                closeMiniWin();
-            }
-
-            public void windowIconified(WindowEvent we) {
-            }
-
-            public void windowDeiconified(WindowEvent we) {
-            }
-
-            public void windowActivated(WindowEvent we) {
-            }
-
-            public void windowDeactivated(WindowEvent we) {
+            public void eventOccurred(int eventID) {
+                System.out.println("event!");
             }
         });
     }
@@ -231,6 +202,7 @@ public class Osteoclasts_ implements PlugInFilter {
      * and save the results in a csv file.
      */
     private void pa() {
+        ImagePlus imp = getCurrentImp();
         Overlay o = imp.getOverlay();
 
         RoiManager rm = new RoiManager(true);
@@ -246,8 +218,6 @@ public class Osteoclasts_ implements PlugInFilter {
             mask.getProcessor().setColor(Color.BLACK);
             mask.getProcessor().fill(roi);
         }
-        
-        mask.show();
 
         // analyze particles
         ResultsTable paResults = new ResultsTable();
