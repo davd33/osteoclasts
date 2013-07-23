@@ -91,15 +91,10 @@ public class Osteoclasts_ implements PlugInFilter {
         runMiniWin();
         logToMiniWin("Welcome Ana! ;)");
 
-        if (imp.getOverlay() != null) {
-            imp.getOverlay().setFillColor(Osteoclasts_.OVERLAY_COLOR);
-            imp.getOverlay().drawBackgrounds(true);
-            imp.getOverlay().drawLabels(true);
-        } else {
+        if (imp.getOverlay() == null) {
             imp.setOverlay(new Overlay());
         }
-
-        final ImagePlus impML = this.imp;
+        
         this.imp.getWindow().addWindowListener(new WindowListener() {
             public void windowOpened(WindowEvent we) {
             }
@@ -121,32 +116,6 @@ public class Osteoclasts_ implements PlugInFilter {
             }
 
             public void windowDeactivated(WindowEvent we) {
-            }
-        });
-
-        this.imp.getCanvas().addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                if (me.isControlDown() && impML.getOverlay() != null && impML.getRoi() != null) {
-                    impML.getOverlay().add(impML.getRoi());
-                    impML.getOverlay().setFillColor(Osteoclasts_.OVERLAY_COLOR);
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent me) {
             }
         });
     }
@@ -263,9 +232,6 @@ public class Osteoclasts_ implements PlugInFilter {
      */
     private void pa() {
         Overlay o = imp.getOverlay();
-        o.drawLabels(false);
-        o.drawNames(false);
-        o.drawBackgrounds(true);
 
         RoiManager rm = new RoiManager(true);
         for (int i = 0; i < o.size(); i++) {
@@ -280,6 +246,8 @@ public class Osteoclasts_ implements PlugInFilter {
             mask.getProcessor().setColor(Color.BLACK);
             mask.getProcessor().fill(roi);
         }
+        
+        mask.show();
 
         // analyze particles
         ResultsTable paResults = new ResultsTable();
