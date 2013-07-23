@@ -7,11 +7,15 @@ package org.osteo.ij.plugin;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Overlay;
+import ij.gui.Roi;
 import ij.plugin.ChannelSplitter;
 import ij.plugin.Converter;
 import ij.plugin.ImageCalculator;
 import ij.plugin.Thresholder;
 import ij.plugin.filter.PlugInFilter;
+import ij.plugin.frame.RoiManager;
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -23,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -35,7 +40,7 @@ public class Osteoclasts_ implements PlugInFilter {
 
     private ImagePlus imp;
     private JFrame miniWin;
-    public static final Color OVERLAY_COLOR = Color.CYAN;
+    public static final Color OVERLAY_COLOR = Color.MAGENTA;
 
     @Override
     public int setup(String arg, ImagePlus imp) {
@@ -111,10 +116,8 @@ public class Osteoclasts_ implements PlugInFilter {
     private enum Actions {
 
         PA("Analyze Particles", "compute the final results and save them in a csv file"),
-        OPEN("Open Images", "give the plugin the images to analyze"),
         CLASS("Run Classifier", "analyze the original images"),
-        OVERLAYS("Get Overlays", "analyze classified images"),
-        OPTIONS("Options", "change options");
+        OVERLAYS("Get Overlays", "analyze classified images");
         private String name;
         private String desc;
 
@@ -157,10 +160,6 @@ public class Osteoclasts_ implements PlugInFilter {
                     pa();
                 } else if (source.getText().equals(Actions.CLASS.getName())) {
                     classify();
-                } else if (source.getText().equals(Actions.OPEN.getName())) {
-                    open();
-                } else if (source.getText().equals(Actions.OPTIONS.getName())) {
-                    options();
                 } else if (source.getText().equals(Actions.OVERLAYS.getName())) {
                     overlays();
                 }
@@ -182,16 +181,8 @@ public class Osteoclasts_ implements PlugInFilter {
         System.out.println("classifier");
     }
 
-    private void options() {
-        System.out.println("options");
-    }
-
     private void overlays() {
         System.out.println("overlays");
-    }
-
-    private void open() {
-        System.out.println("open images");
     }
 
     private void pa() {
@@ -200,10 +191,24 @@ public class Osteoclasts_ implements PlugInFilter {
         o.drawNames(false);
         o.drawBackgrounds(true);
         
+        RoiManager rm = new RoiManager(true);
+        for (int i = 0; i < o.size(); i++) {
+            rm.addRoi(o.get(i));
+        }
+        
+        IJ.log("" + rm.getCount());
+        
+        byte[] maskBytes = new byte[imp.getWidth() * imp.getHeight()];
+        Arrays.fill(maskBytes, (byte)255);
+        ImagePlus mask = new ImagePlus("mask", new ByteProcessor(imp.getWidth(), imp.getHeight(), maskBytes));
+        mask.show();
+        
+        for (Roi roi : rm.getRoisAsArray()) {
+            mask.getProcessor().setColor(Color.BLACK);
+            mask.getProcessor().fill(roi);
+        }
+        
         IJ.log(o.size() + " detected osteoclasts");
-
-        ImagePlus impLocal = imp.flatten();
-        overlayToMask(impLocal, Osteoclasts_.OVERLAY_COLOR);
     }
 
     private ImagePlus overlayToMask(ImagePlus impLocal, Color color) {
@@ -212,10 +217,16 @@ public class Osteoclasts_ implements PlugInFilter {
         int[] min = new int[3];
         int[] max = new int[3];
         String[] filter = new String[3];
-
-        String a = impLocal.getTitle();
         
-        ImagePlus[] channels = ChannelSplitter.split(impLocal);
+        impLocal.show();
+        
+        ColorProcessor cpLocal = ((ColorProcessor)impLocal.getProcessor());
+        ImagePlus[] channels = new ImagePlus[3];
+        for (int i = 0; i < 3; i++) {
+            ByteProcessor bp = new ByteProcessor(impLocal.getWidth(), impLocal.getHeight(), cpLocal.getChannel(i));
+            channels[i] = new ImagePlus("channel " + i, bp);
+            channels[i].show();
+        }
 
         min[0] = color.getRed();
         max[0] = 255;
