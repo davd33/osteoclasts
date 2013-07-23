@@ -8,10 +8,13 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Overlay;
 import ij.gui.Roi;
+import ij.measure.Measurements;
+import ij.measure.ResultsTable;
 import ij.plugin.ChannelSplitter;
 import ij.plugin.Converter;
 import ij.plugin.ImageCalculator;
 import ij.plugin.Thresholder;
+import ij.plugin.filter.ParticleAnalyzer;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.frame.RoiManager;
 import ij.process.ByteProcessor;
@@ -27,7 +30,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -55,6 +61,11 @@ public class Osteoclasts_ implements PlugInFilter {
      * One unique color for managing overlays.
      */
     public static final Color OVERLAY_COLOR = Color.MAGENTA;
+    
+    /**
+     * Simulate infinity.
+     */
+    protected final static double INFINITY = 1.0 / 0.0;
 
     /**
      * The plugin is given an image.
@@ -258,6 +269,26 @@ public class Osteoclasts_ implements PlugInFilter {
         for (Roi roi : rm.getRoisAsArray()) {
             mask.getProcessor().setColor(Color.BLACK);
             mask.getProcessor().fill(roi);
+        }
+        
+        // analyze particles
+        ResultsTable paResults = new ResultsTable();
+        ParticleAnalyzer particleAnalyzer = new ParticleAnalyzer(
+                ParticleAnalyzer.IN_SITU_SHOW
+                | ParticleAnalyzer.INCLUDE_HOLES
+                | ParticleAnalyzer.SHOW_NONE,
+                Measurements.AREA | Measurements.MEAN
+                | Measurements.MIN_MAX | Measurements.CENTROID
+                | Measurements.PERIMETER
+                | Measurements.SHAPE_DESCRIPTORS,
+                paResults,
+                0d, INFINITY, 0d, 1d);
+        particleAnalyzer.analyze(imp);
+        try {
+            paResults.saveAs(IJ.getFilePath("Where should the results be saved?"));
+        } catch (IOException ex) {
+            IJ.log("Unable to save the results file.");
+            log(ex.getMessage());
         }
     }
 
