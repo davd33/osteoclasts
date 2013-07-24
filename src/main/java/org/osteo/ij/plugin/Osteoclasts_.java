@@ -1,18 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.osteo.ij.plugin;
 
 import ij.IJ;
-import ij.IJEventListener;
 import ij.ImagePlus;
 import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.ContrastEnhancer;
-import ij.plugin.EventListener;
 import ij.plugin.ImageCalculator;
 import ij.plugin.PlugIn;
 import ij.plugin.filter.Binary;
@@ -29,13 +23,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -44,12 +34,12 @@ import javax.swing.SwingUtilities;
 import org.osteo.ij.morph.GrayMorphology_;
 
 /**
- * Supply all the features for osteoclast images classification and
- * segmentation.
+ * Supplies all the features for classifying and
+ * quantifying osteoclast images.
  *
- * @author davidr
+ * @author David Rueda
  */
-public class Osteoclasts_ implements PlugIn {
+public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     
     private final String mfRadiusName  = "Median filter radius";
     private final String mfRepeatName  = "Median filter repetitions";
@@ -57,15 +47,6 @@ public class Osteoclasts_ implements PlugIn {
     private final String paMinCircName = "Particle analyzer min circularity";
     private final String paMaxCircName = "Particle analyzer max circularity";
     private final String incBright     = "Increase Brightness";
-    
-    private List<Overlay> stackOverlays;
-    
-    private List<Overlay> getStackOverlays() {
-        if (this.stackOverlays == null) {
-            this.stackOverlays = new ArrayList<Overlay>();
-        }
-        return this.stackOverlays;
-    }
 
     /**
      * Little window with a few buttons.
@@ -80,10 +61,6 @@ public class Osteoclasts_ implements PlugIn {
      * Simulate infinity.
      */
     protected final static double INFINITY = 1.0 / 0.0;
-
-    private ImagePlus getCurrentImp() {
-        return IJ.getImage();
-    }
 
     /**
      * Basic constructor.
@@ -154,7 +131,7 @@ public class Osteoclasts_ implements PlugIn {
             public void run() {
                 Osteoclasts_.this.miniWinInfosPanel.add(new JLabel(message));
                 Osteoclasts_.this.miniWinInfosPanel.updateUI();
-                Osteoclasts_.this.miniWin.pack();
+                Osteoclasts_.miniWin.pack();
             }
         });
     }
