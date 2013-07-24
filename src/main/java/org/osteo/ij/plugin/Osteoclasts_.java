@@ -33,7 +33,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -49,12 +51,21 @@ import org.osteo.ij.morph.GrayMorphology_;
  */
 public class Osteoclasts_ implements PlugIn {
     
-    public final String mfRadiusName  = "Median filter radius";
-    public final String mfRepeatName  = "Median filter repetitions";
-    public final String paMinSizeName = "Particle analyzer min size";
-    public final String paMinCircName = "Particle analyzer min circularity";
-    public final String paMaxCircName = "Particle analyzer max circularity";
-    public final String incBright     = "Increase Brightness";
+    private final String mfRadiusName  = "Median filter radius";
+    private final String mfRepeatName  = "Median filter repetitions";
+    private final String paMinSizeName = "Particle analyzer min size";
+    private final String paMinCircName = "Particle analyzer min circularity";
+    private final String paMaxCircName = "Particle analyzer max circularity";
+    private final String incBright     = "Increase Brightness";
+    
+    private List<Overlay> stackOverlays;
+    
+    private List<Overlay> getStackOverlays() {
+        if (this.stackOverlays == null) {
+            this.stackOverlays = new ArrayList<Overlay>();
+        }
+        return this.stackOverlays;
+    }
 
     /**
      * Little window with a few buttons.
@@ -194,7 +205,7 @@ public class Osteoclasts_ implements PlugIn {
      * Run the classifier on selected image.
      */
     private void classify() {
-        System.out.println("classifier");
+        IJ.log("It will be implemented soon ;)");
     }
 
     /**
