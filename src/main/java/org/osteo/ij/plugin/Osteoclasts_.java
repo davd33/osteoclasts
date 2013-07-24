@@ -11,11 +11,15 @@ import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
+import ij.plugin.ContrastEnhancer;
 import ij.plugin.EventListener;
 import ij.plugin.ImageCalculator;
 import ij.plugin.PlugIn;
+import ij.plugin.filter.Binary;
 import ij.plugin.filter.ParticleAnalyzer;
+import ij.plugin.filter.RankFilters;
 import ij.plugin.frame.RoiManager;
+import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
@@ -33,6 +37,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.osteo.ij.morph.GrayMorphology_;
 
 /**
  * Supply all the features for osteoclast images classification and
@@ -41,6 +46,13 @@ import javax.swing.SwingUtilities;
  * @author davidr
  */
 public class Osteoclasts_ implements PlugIn {
+    
+    public final String mfRadiusName  = "Median filter radius";
+    public final String mfRepeatName  = "Median filter repetitions";
+    public final String paMinSizeName = "Particle analyzer min size";
+    public final String paMinCircName = "Particle analyzer min circularity";
+    public final String paMaxCircName = "Particle analyzer max circularity";
+    public final String incBright     = "Increase Brightness";
 
     /**
      * Little window with a few buttons.
@@ -82,13 +94,6 @@ public class Osteoclasts_ implements PlugIn {
         
         IJ.run("Labels...", "color=blue font=12 show draw");
         IJ.run("Overlay Options...", "stroke=yellow width=2 fill=none");
-        
-        IJ.addEventListener(new IJEventListener() {
-
-            public void eventOccurred(int eventID) {
-                System.out.println("event!");
-            }
-        });
     }
 
     /**
@@ -190,11 +195,73 @@ public class Osteoclasts_ implements PlugIn {
     }
 
     /**
+     * Analyze probability image.
+     * 
+     * @param workingImg
+     * @param os
+     * @return 
+     */
+    private ImagePlus applyIPP(ImagePlus workingImg, OptionSet os) {
+        RankFilters rf = new RankFilters();
+
+        workingImg.getStack().deleteLastSlice();
+        workingImg.setProcessor(workingImg.getProcessor().convertToByte(true));
+        ImageProcessor workingProcessor = workingImg.getProcessor();
+
+        // increase brightness in working image
+        if (os.getOption(incBright).isSelected()) {
+            // close 5px
+            GrayMorphology_ gm = new GrayMorphology_();
+            gm.setup("radius=5 type=circle operator=close", workingImg);
+            gm.run(workingProcessor);
+            // median filter
+            Double n = Double.parseDouble(os.getOptionValue(mfRepeatName));
+            Integer medRadius = Integer.parseInt(os.getOptionValue(mfRadiusName).split("\\.")[0]);
+            for (int i = 0; i < n; i++) {
+                rf.rank(workingProcessor, medRadius, RankFilters.MEDIAN);
+            }
+        }
+
+        ImagePlus edgesImg = workingImg.duplicate();
+        ImageProcessor edgesProcessor = edgesImg.getProcessor();
+
+        // find edges & sharpen
+        edgesProcessor.findEdges();
+
+        // subtract
+        ImageCalculator imgCalc = new ImageCalculator();
+        ImagePlus finalImg = imgCalc.run("Subtract create", workingImg, edgesImg);
+        ImageProcessor finalProcessor = finalImg.getProcessor();
+
+        // post processing
+        rf.rank(edgesProcessor, 5d, RankFilters.MEDIAN);
+
+        // enhance contrast
+        ContrastEnhancer ce = new ContrastEnhancer();
+        ce.stretchHistogram(finalImg, 0.35);
+
+        // auto threshold
+        finalProcessor.setAutoThreshold(AutoThresholder.Method.Minimum, true);
+        finalProcessor.autoThreshold();
+        finalProcessor.invert();
+
+        // close & fill holes
+        Binary binary = new Binary();
+        binary.setup("close", finalImg);
+        binary.run(finalProcessor);
+        binary.setup("fill", finalImg);
+        binary.run(finalProcessor);
+
+        return finalImg;
+    }
+
+    /**
      * Get the overlays. Analyze probability images, which are the results of
      * the classification.
      */
     private void overlays() {
-        System.out.println("overlays");
+        ImagePlus imp = getCurrentImp();
+        Overlay o = imp.getOverlay() == null ? new Overlay() : imp.getOverlay();
     }
 
     /**
