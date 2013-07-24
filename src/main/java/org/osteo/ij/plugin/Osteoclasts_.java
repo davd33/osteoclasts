@@ -29,6 +29,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -92,8 +94,8 @@ public class Osteoclasts_ implements PlugIn {
             miniWin.setVisible(true);
         }
         
-        IJ.run("Labels...", "color=blue font=12 show draw");
-        IJ.run("Overlay Options...", "stroke=yellow width=2 fill=none");
+        IJ.run("Labels...", "color=white font=12 show draw");
+        IJ.run("Overlay Options...", "stroke=" + Osteoclasts_.OVERLAY_COLOR.toString().toLowerCase() + " width=2 fill=none");
     }
 
     /**
@@ -153,8 +155,9 @@ public class Osteoclasts_ implements PlugIn {
         miniWin = new JFrame();
         miniWin.setLayout(new BorderLayout());
         miniWin.setVisible(true);
+        miniWin.setTitle("ღosteoclastsღ");
 
-        JPanel actionsPanel = new JPanel(new GridBagLayout());
+        final JPanel actionsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -251,6 +254,23 @@ public class Osteoclasts_ implements PlugIn {
         binary.run(finalProcessor);
         binary.setup("fill", finalImg);
         binary.run(finalProcessor);
+        
+        // analyze particles
+        ResultsTable paResults = new ResultsTable();
+        ParticleAnalyzer particleAnalyzer = new ParticleAnalyzer(
+                ParticleAnalyzer.IN_SITU_SHOW
+                | ParticleAnalyzer.INCLUDE_HOLES
+                | ParticleAnalyzer.SHOW_OVERLAY_OUTLINES,
+                Measurements.AREA | Measurements.MEAN
+                | Measurements.MIN_MAX | Measurements.CENTROID
+                | Measurements.PERIMETER
+                | Measurements.SHAPE_DESCRIPTORS,
+                paResults,
+                Double.parseDouble(os.getOptionValue(paMinSizeName)),
+                INFINITY,
+                Double.parseDouble(os.getOptionValue(paMinCircName)),
+                Double.parseDouble(os.getOptionValue(paMaxCircName)));
+        particleAnalyzer.analyze(finalImg);
 
         return finalImg;
     }
@@ -262,6 +282,37 @@ public class Osteoclasts_ implements PlugIn {
     private void overlays() {
         ImagePlus imp = getCurrentImp();
         Overlay o = imp.getOverlay() == null ? new Overlay() : imp.getOverlay();
+        
+        OptionSet os = new OptionSet();
+        Option mf_radius = new Option(
+                mfRadiusName, Option.Type.STRING);
+        mf_radius.setCurrentValue("5");
+        Option mf_repets = new Option(
+                mfRepeatName, Option.Type.STRING);
+        mf_repets.setCurrentValue("2");
+        Option pa_minSize = new Option(
+                paMinSizeName, Option.Type.STRING);
+        pa_minSize.setCurrentValue("150");
+        Option pa_minCirc = new Option(
+                paMinCircName, Option.Type.STRING);
+        pa_minCirc.setCurrentValue("0.00001");
+        Option pa_maxCirc = new Option(
+                paMaxCircName, Option.Type.STRING);
+        pa_maxCirc.setCurrentValue("0.8");
+        Option inc_bright = new Option(
+                incBright, Option.Type.STRING);
+        inc_bright.setSelected(true);
+        
+        os.add(mf_radius);
+        os.add(mf_repets);
+        os.add(pa_minSize);
+        os.add(pa_minCirc);
+        os.add(pa_maxCirc);
+        os.add(inc_bright);
+        
+        ImagePlus maskResult = applyIPP(imp.duplicate(), os);
+        imp.setOverlay(maskResult.getOverlay());
+        imp.getOverlay().setFillColor(Osteoclasts_.OVERLAY_COLOR);
     }
 
     /**
