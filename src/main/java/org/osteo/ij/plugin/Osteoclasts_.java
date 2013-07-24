@@ -153,6 +153,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         c.fill = GridBagConstraints.HORIZONTAL;
 
         ActionListener actionListener = new ActionListener() {
+            
             public void actionPerformed(ActionEvent ae) {
                 JButton source = (JButton) ae.getSource();
 
