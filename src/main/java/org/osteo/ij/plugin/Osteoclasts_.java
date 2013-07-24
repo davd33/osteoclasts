@@ -56,7 +56,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     /**
      * One unique color for managing overlays.
      */
-    public static final Color OVERLAY_COLOR = Color.MAGENTA;
+    public static final Color OVERLAY_COLOR = Color.PINK;
     /**
      * Simulate infinity.
      */
@@ -80,10 +80,12 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             logToMiniWin("Welcome Ana! ;)");
         } else {
             miniWin.setVisible(true);
+            miniWin.requestFocus();
         }
         
         IJ.run("Labels...", "color=white font=12 show draw");
-        IJ.run("Overlay Options...", "stroke=" + Osteoclasts_.OVERLAY_COLOR.toString().toLowerCase() + " width=2 fill=none");
+        String rgb = Integer.toHexString(OVERLAY_COLOR.getRGB());
+        IJ.run("Overlay Options...", "stroke=#" + rgb + " width=4 fill=none");
     }
 
     /**
@@ -131,7 +133,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             public void run() {
                 Osteoclasts_.this.miniWinInfosPanel.add(new JLabel(message));
                 Osteoclasts_.this.miniWinInfosPanel.updateUI();
-                Osteoclasts_.miniWin.pack();
+                miniWin.pack();
             }
         });
     }
@@ -300,7 +302,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         
         ImagePlus maskResult = applyIPP(imp.duplicate(), os);
         imp.setOverlay(maskResult.getOverlay());
-        imp.getOverlay().setFillColor(Osteoclasts_.OVERLAY_COLOR);
+        imp.getOverlay().setStrokeColor(OVERLAY_COLOR);
     }
 
     /**

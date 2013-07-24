@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  *
- * @author davidr
+ * @author David Rueda
  */
 public abstract class AbstractOsteoclasts {
     
