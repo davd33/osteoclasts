@@ -26,8 +26,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.script.ScriptException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -183,16 +181,16 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     }
 
     private boolean loadClassifier(WekaSegmentation weka, String classifierPath)
-            throws ScriptException {
+            throws Exception {
         if (classifierPath == null || classifierPath.isEmpty()) {
-            throw new ScriptException("No classifier file specified!");
+            throw new Exception("No classifier file specified!");
         }
 
         IJ.log("Loading Weka classifier from " + classifierPath + "...");
         // Try to load Weka model (classifier and train header)
         System.gc();
         if (!weka.loadClassifier(classifierPath)) {
-            throw new ScriptException(
+            throw new Exception(
                     "Error when loading Weka classifier from file");
         }
 
@@ -200,7 +198,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 + " (number of attributes = "
                 + weka.getTrainHeader().numAttributes() + ")");
         if (weka.getTrainHeader().numAttributes() < 1) {
-            throw new ScriptException(
+            throw new Exception(
                     "Error: No attributes were found on the model header");
         }
 
@@ -245,7 +243,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                     }
                 }
             }
-        } catch (ScriptException ex) {
+        } catch (Exception ex) {
             IJ.error(ex.getMessage());
         }
     }
