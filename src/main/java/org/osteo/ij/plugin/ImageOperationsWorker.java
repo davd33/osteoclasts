@@ -4,9 +4,11 @@
  */
 package org.osteo.ij.plugin;
 
+import ij.IJ;
 import ij.ImagePlus;
 import java.lang.reflect.Method;
 import javax.swing.SwingWorker;
+import static org.osteo.ij.plugin.Osteoclasts_.OVERLAY_COLOR;
 
 /**
  *
@@ -50,4 +52,14 @@ public class ImageOperationsWorker extends SwingWorker<Object, Object> {
         }
         return null;
     }
+
+    @Override
+    protected void done() {
+        super.done();
+
+        String rgb = Integer.toHexString(OVERLAY_COLOR.getRGB());
+        IJ.run("Overlay Options...", "stroke=#" + rgb + " width=2 fill=none apply");
+        IJ.run("Labels...", "color=white font=9 show draw");
+    }
+    
 }

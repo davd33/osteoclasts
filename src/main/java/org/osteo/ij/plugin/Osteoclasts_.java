@@ -55,7 +55,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     /**
      * One unique color for managing overlays.
      */
-    public static final Color OVERLAY_COLOR = Color.orange;
+    public static final Color OVERLAY_COLOR = Color.magenta;
     /**
      * Simulate infinity.
      */
@@ -81,10 +81,6 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             miniWin.setVisible(true);
             miniWin.requestFocus();
         }
-
-        IJ.run("Labels...", "color=white font=12 show draw");
-        String rgb = Integer.toHexString(OVERLAY_COLOR.getRGB());
-        IJ.run("Overlay Options...", "stroke=#" + rgb + " width=2 fill=none");
     }
 
     /**
@@ -347,10 +343,10 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         mf_radius.setCurrentValue("5");
         Option mf_repets = new Option(
                 mfRepeatName, Option.Type.STRING);
-        mf_repets.setCurrentValue("2");
+        mf_repets.setCurrentValue("4");
         Option pa_minSize = new Option(
                 paMinSizeName, Option.Type.STRING);
-        pa_minSize.setCurrentValue("150");
+        pa_minSize.setCurrentValue("200");
         Option pa_minCirc = new Option(
                 paMinCircName, Option.Type.STRING);
         pa_minCirc.setCurrentValue("0.00001");
@@ -359,7 +355,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         pa_maxCirc.setCurrentValue("0.8");
         Option inc_bright = new Option(
                 incBright, Option.Type.STRING);
-        inc_bright.setSelected(true);
+        inc_bright.setSelected(false);
 
         os.add(mf_radius);
         os.add(mf_repets);
