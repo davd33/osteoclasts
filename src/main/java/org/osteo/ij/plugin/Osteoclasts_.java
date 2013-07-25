@@ -377,7 +377,6 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
 
         ImagePlus maskResult = applyIPP(imp.duplicate(), os);
         imp.setOverlay(maskResult.getOverlay());
-        imp.getOverlay().setStrokeColor(OVERLAY_COLOR);
     }
 
     /**
