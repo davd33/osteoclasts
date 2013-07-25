@@ -59,13 +59,6 @@
             </plugin>
         </plugins>
     </build>
-    
-<!--    <repositories>
-        <repository>
-            <id>perso</id>
-            <url>file://${old_osteo_dir}</url>
-        </repository>
-    </repositories>-->
 
     <dependencies>
         <dependency>
@@ -79,26 +72,6 @@
             <artifactId>imagej</artifactId>
             <version>1.47</version>
         </dependency>
-        <!--        <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>Trainable_Segmentation</artifactId>
-            <version>2.0</version>
-            <scope>system</scope>
-            <systemPath>/home/bioinf/davidr/Downloads/osteo/jars/Trainable_Segmentation.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>weka</groupId>
-            <artifactId>weka</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>/home/bioinf/davidr/Downloads/osteo/jars/weka.jar</systemPath>
-        </dependency>-->
-<!--        <dependency>
-            <groupId>aws</groupId>
-            <artifactId>aws.old</artifactId>
-            <version>1</version>
-            <type>pom</type>
-        </dependency>-->
         <dependency>
             <groupId>nz.ac.waikato.cms.weka</groupId>
             <artifactId>weka-dev</artifactId>
