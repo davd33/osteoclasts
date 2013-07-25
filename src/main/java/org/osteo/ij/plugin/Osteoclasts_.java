@@ -90,7 +90,8 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
 
         PA("Analyze Particles", "compute the final results and save them in a csv file"),
         CLASS("Run Classifier", "analyze the original images"),
-        OVERLAYS("Get Overlays", "analyze classified images");
+        OVERLAYS("Get Overlay", "analyze classified images"),
+        RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image");
         private String name;
         private String desc;
 
@@ -151,15 +152,17 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             public void actionPerformed(ActionEvent ae) {
                 JButton source = (JButton) ae.getSource();
                 ImageOperationsWorker iow = new ImageOperationsWorker(Osteoclasts_.this);
-                
+
                 if (source.getText().equals(Actions.PA.getName())) {
                     iow.setMethodToInvoke("pa");
                 } else if (source.getText().equals(Actions.CLASS.getName())) {
                     iow.setMethodToInvoke("classify");
                 } else if (source.getText().equals(Actions.OVERLAYS.getName())) {
                     iow.setMethodToInvoke("overlays");
+                } else if (source.getText().equals(Actions.RM_OVERLAYS.getName())) {
+                    iow.setMethodToInvoke("rmOverlays");
                 }
-                
+
                 iow.execute();
             }
         };
@@ -219,7 +222,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             }
 
             WekaSegmentation weka = new WekaSegmentation();
-            weka.setTrainingImage(imp);
+//            weka.setTrainingImage(imp);
             if (loadClassifier(weka, classifierPath)) {
                 weka.applyClassifier(0, true);
                 ImagePlus result = weka.getClassifiedImage();
@@ -244,6 +247,14 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         } catch (Exception ex) {
             IJ.error(ex.getMessage());
         }
+    }
+    
+    /**
+     * Will remove the overlay for the selected image.
+     */
+    void rmOverlays() {
+        ImagePlus imp = getCurrentImp();
+        imp.setOverlay(null);
     }
 
     /**

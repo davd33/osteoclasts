@@ -41,14 +41,13 @@ public class ImageOperationsWorker extends SwingWorker<Object, Object> {
         Class osteoClass = Osteoclasts_.class;
         try {
             Method method = osteoClass.getDeclaredMethod(methodToInvoke);
-            System.out.println("Running Method " + this.methodToInvoke + "()");
             method.invoke(pluginInstance);
         } catch (SecurityException e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
         } catch (NoSuchMethodException e) {
-            System.out.println("method not found: " + this.methodToInvoke + "()");
+            System.err.println("method not found: " + this.methodToInvoke + "()");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println("Problem happend: \n" + e.getMessage());
         }
         return null;
     }
