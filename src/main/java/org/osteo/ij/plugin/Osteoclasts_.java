@@ -26,12 +26,14 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import javax.script.ScriptException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.osteo.ij.morph.GrayMorphology_;
+import trainableSegmentation.WekaSegmentation;
 
 /**
  * Supplies all the features for classifying and
@@ -179,6 +181,32 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         miniWin.getContentPane().add(miniWinInfosPanel, BorderLayout.NORTH);
         miniWin.getContentPane().add(actionsPanel, BorderLayout.CENTER);
         miniWin.pack();
+    }
+
+    private boolean loadClassifier(WekaSegmentation weka, String classifierPath)
+            throws ScriptException {
+        if (classifierPath == null || classifierPath.isEmpty()) {
+            throw new ScriptException("No classifier file specified!");
+        }
+
+        IJ.log("Loading Weka classifier from " + classifierPath + "...");
+        // Try to load Weka model (classifier and train header)
+        System.gc();
+        if (!weka.loadClassifier(classifierPath)) {
+            throw new ScriptException(
+                    "Error when loading Weka classifier from file");
+        }
+
+        IJ.log("Read header from " + classifierPath
+                + " (number of attributes = "
+                + weka.getTrainHeader().numAttributes() + ")");
+        if (weka.getTrainHeader().numAttributes() < 1) {
+            throw new ScriptException(
+                    "Error: No attributes were found on the model header");
+        }
+
+        IJ.log("Loaded " + classifierPath);
+        return true;
     }
 
     /**
