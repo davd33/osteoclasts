@@ -26,6 +26,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.ScriptException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,20 +38,18 @@ import org.osteo.ij.morph.GrayMorphology_;
 import trainableSegmentation.WekaSegmentation;
 
 /**
- * Supplies all the features for classifying and
- * quantifying osteoclast images.
+ * Supplies all the features for classifying and quantifying osteoclast images.
  *
  * @author David Rueda
  */
 public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
-    
-    private final String mfRadiusName  = "Median filter radius";
-    private final String mfRepeatName  = "Median filter repetitions";
+
+    private final String mfRadiusName = "Median filter radius";
+    private final String mfRepeatName = "Median filter repetitions";
     private final String paMinSizeName = "Particle analyzer min size";
     private final String paMinCircName = "Particle analyzer min circularity";
     private final String paMaxCircName = "Particle analyzer max circularity";
-    private final String incBright     = "Increase Brightness";
-
+    private final String incBright = "Increase Brightness";
     /**
      * Little window with a few buttons.
      */
@@ -84,7 +84,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             miniWin.setVisible(true);
             miniWin.requestFocus();
         }
-        
+
         IJ.run("Labels...", "color=white font=12 show draw");
         String rgb = Integer.toHexString(OVERLAY_COLOR.getRGB());
         IJ.run("Overlay Options...", "stroke=#" + rgb + " width=4 fill=none");
@@ -155,7 +155,6 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         c.fill = GridBagConstraints.HORIZONTAL;
 
         ActionListener actionListener = new ActionListener() {
-            
             public void actionPerformed(ActionEvent ae) {
                 JButton source = (JButton) ae.getSource();
 
@@ -213,15 +212,50 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      * Run the classifier on selected image.
      */
     private void classify() {
-        IJ.log("It will be implemented soon ;)");
+        try {
+            ImagePlus imp = getCurrentImp();
+
+            String classifierPath = IJ.getFilePath("Tell me please, where the classifier is.");
+
+            if (imp.getProcessor().getNChannels() != 3) {
+                IJ.error("The script can be processed only on RGB images.");
+                return;
+            }
+
+            WekaSegmentation weka = new WekaSegmentation();
+            weka.setTrainingImage(imp);
+            if (loadClassifier(weka, classifierPath)) {
+                weka.applyClassifier(0, true);
+                ImagePlus result = weka.getClassifiedImage();
+
+
+                String path = IJ.getFilePath("Where should the results be saved?");
+                if (path != null) {
+                    File file = new File(path);
+
+                    if (file.exists()) {
+                        boolean nonetheless = IJ.showMessageWithCancel(
+                                "Save results...",
+                                "\"" + file.getName() + "\" already exists.\nDo you want to replace it?");
+                        if (nonetheless) {
+                            IJ.saveAs(result, "Tiff", path);
+                        }
+                    } else {
+                        IJ.saveAs(result, "Tiff", path);
+                    }
+                }
+            }
+        } catch (ScriptException ex) {
+            IJ.error(ex.getMessage());
+        }
     }
 
     /**
      * Analyze probability image.
-     * 
+     *
      * @param workingImg
      * @param os
-     * @return 
+     * @return
      */
     private ImagePlus applyIPP(ImagePlus workingImg, OptionSet os) {
         RankFilters rf = new RankFilters();
@@ -273,7 +307,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         binary.run(finalProcessor);
         binary.setup("fill", finalImg);
         binary.run(finalProcessor);
-        
+
         // analyze particles
         ResultsTable paResults = new ResultsTable();
         ParticleAnalyzer particleAnalyzer = new ParticleAnalyzer(
@@ -301,7 +335,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     private void overlays() {
         ImagePlus imp = getCurrentImp();
         Overlay o = imp.getOverlay() == null ? new Overlay() : imp.getOverlay();
-        
+
         OptionSet os = new OptionSet();
         Option mf_radius = new Option(
                 mfRadiusName, Option.Type.STRING);
@@ -321,14 +355,14 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         Option inc_bright = new Option(
                 incBright, Option.Type.STRING);
         inc_bright.setSelected(true);
-        
+
         os.add(mf_radius);
         os.add(mf_repets);
         os.add(pa_minSize);
         os.add(pa_minCirc);
         os.add(pa_maxCirc);
         os.add(inc_bright);
-        
+
         ImagePlus maskResult = applyIPP(imp.duplicate(), os);
         imp.setOverlay(maskResult.getOverlay());
         imp.getOverlay().setStrokeColor(OVERLAY_COLOR);
