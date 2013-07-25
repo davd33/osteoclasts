@@ -52,7 +52,7 @@ import java.util.*;
  *
  */
 public class GrayMorphology_ implements PlugInFilter, Constants {
-    ImagePlus imp;
+    public ImagePlus imp;
     public String kernelText = " 0 0 0 0 0\n 0 0 255 0 0\n 0 255 255 255 0\n 0 0 255 0 0\n 0 0 0 0 0\n";
     private static final String R="SE_r", SHOW="show_SE", SETYPE="SE_type", OPER="MOper";
     boolean canceled = true;
@@ -60,10 +60,10 @@ public class GrayMorphology_ implements PlugInFilter, Constants {
     public StructureElement se, minus_se, plus_se, down_se, up_se;
     MorphoProcessor mp;
     ImageWindow win;
-    private static float radius=(float)Prefs. getDouble(R,1);
-    private static int options=Prefs.getInt(SETYPE,0);
-    private static boolean showoptions=Prefs.getBoolean(SHOW,false);
-    private static int morphoptions=Prefs.getInt(OPER,0);
+    public static float radius=(float)Prefs. getDouble(R,1);
+    public static int options=Prefs.getInt(SETYPE,0);
+    public static boolean showoptions=Prefs.getBoolean(SHOW,false);
+    public static int morphoptions=Prefs.getInt(OPER,0);
     public final static String[] strelitems={"circle","diamond","square","hor line","ver line","2p h","2p v","free form"};
     public final static int[] constitems={CIRCLE,DIAMOND,SQARE,HLINE,VLINE,HPOINTS,VPOINTS,FREE};
     public final static String[] morphitems={"erode","dilate","open","close",

@@ -26,7 +26,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import javax.script.ScriptException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -56,7 +55,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     /**
      * One unique color for managing overlays.
      */
-    public static final Color OVERLAY_COLOR = Color.PINK;
+    public static final Color OVERLAY_COLOR = Color.orange;
     /**
      * Simulate infinity.
      */
@@ -85,7 +84,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
 
         IJ.run("Labels...", "color=white font=12 show draw");
         String rgb = Integer.toHexString(OVERLAY_COLOR.getRGB());
-        IJ.run("Overlay Options...", "stroke=#" + rgb + " width=4 fill=none");
+        IJ.run("Overlay Options...", "stroke=#" + rgb + " width=2 fill=none");
     }
 
     /**
@@ -155,14 +154,17 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         ActionListener actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 JButton source = (JButton) ae.getSource();
-
+                ImageOperationsWorker iow = new ImageOperationsWorker(Osteoclasts_.this);
+                
                 if (source.getText().equals(Actions.PA.getName())) {
-                    pa();
+                    iow.setMethodToInvoke("pa");
                 } else if (source.getText().equals(Actions.CLASS.getName())) {
-                    classify();
+                    iow.setMethodToInvoke("classify");
                 } else if (source.getText().equals(Actions.OVERLAYS.getName())) {
-                    overlays();
+                    iow.setMethodToInvoke("overlays");
                 }
+                
+                iow.execute();
             }
         };
 
@@ -209,7 +211,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     /**
      * Run the classifier on selected image.
      */
-    private void classify() {
+    void classify() {
         try {
             ImagePlus imp = getCurrentImp();
 
@@ -266,7 +268,12 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         if (os.getOption(incBright).isSelected()) {
             // close 5px
             GrayMorphology_ gm = new GrayMorphology_();
-            gm.setup("radius=5 type=circle operator=close", workingImg);
+//            gm.setup("radius=5 type=circle operator=close", workingImg);
+            GrayMorphology_.radius = 5f;
+            GrayMorphology_.options = 0;
+            GrayMorphology_.showoptions = false;
+            GrayMorphology_.morphoptions = 3;
+            gm.imp = workingImg;
             gm.run(workingProcessor);
             // median filter
             Double n = Double.parseDouble(os.getOptionValue(mfRepeatName));
@@ -330,7 +337,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      * Get the overlays. Analyze probability images, which are the results of
      * the classification.
      */
-    private void overlays() {
+    void overlays() {
         ImagePlus imp = getCurrentImp();
         Overlay o = imp.getOverlay() == null ? new Overlay() : imp.getOverlay();
 
@@ -370,7 +377,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      * After classification is corrected (by hand), runs the particle analysis
      * and save the results in a csv file.
      */
-    private void pa() {
+    void pa() {
         ImagePlus imp = getCurrentImp();
         Overlay o = imp.getOverlay();
 
