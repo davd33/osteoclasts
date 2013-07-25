@@ -14,6 +14,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <imagej.path>/home/bioinf/davidr/Downloads/ImageJ</imagej.path>
+        <old_osteo_dir>/home/bioinf/davidr/Downloads/osteo/jars</old_osteo_dir>
     </properties>
   
     <build>
@@ -58,6 +59,13 @@
             </plugin>
         </plugins>
     </build>
+    
+<!--    <repositories>
+        <repository>
+            <id>perso</id>
+            <url>file://${old_osteo_dir}</url>
+        </repository>
+    </repositories>-->
 
     <dependencies>
         <dependency>
@@ -71,7 +79,7 @@
             <artifactId>imagej</artifactId>
             <version>1.47</version>
         </dependency>
-        <dependency>
+        <!--        <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>Trainable_Segmentation</artifactId>
             <version>2.0</version>
@@ -84,6 +92,22 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>/home/bioinf/davidr/Downloads/osteo/jars/weka.jar</systemPath>
+        </dependency>-->
+<!--        <dependency>
+            <groupId>aws</groupId>
+            <artifactId>aws.old</artifactId>
+            <version>1</version>
+            <type>pom</type>
+        </dependency>-->
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>weka-dev</artifactId>
+            <version>3.7.9</version>
+        </dependency>
+        <dependency>
+            <groupId>aws</groupId>
+            <artifactId>aws.old</artifactId>
+            <version>1</version>
         </dependency>
     </dependencies>
 </project>
