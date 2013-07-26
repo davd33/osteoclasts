@@ -92,8 +92,9 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
 
         PA("Analyze Particles", "compute the final results and save them in a csv file"),
         CLASS("Run Classifier", "analyze the original images"),
-        OVERLAYS("Get Overlay", "analyze classified images"),
-        RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image");
+        OVERLAYS("Compute Overlay", "analyze classified images"),
+        RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image"),
+        UP_OVERLAYS("Update Overlay", "draw the overlay for the current image or slice");
         private String name;
         private String desc;
 
@@ -163,6 +164,8 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                     iow.setMethodToInvoke("overlays");
                 } else if (source.getText().equals(Actions.RM_OVERLAYS.getName())) {
                     iow.setMethodToInvoke("rmOverlays");
+                } else if (source.getText().equals(Actions.UP_OVERLAYS.getName())) {
+                    iow.setMethodToInvoke("updateOverlay");
                 }
 
                 iow.execute();
@@ -389,11 +392,20 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         ImagePlus maskResult;
         ImageStack stack = imp.getStack();
         for (int s = 1; s <= stack.getSize(); s++) {
+            IJ.showStatus(s+"/"+stack.getSize());
             maskResult = applyIPP(new ImagePlus(imp.getTitle(), stack.getProcessor(s)), os);
             getOverlayStack(imp).put(s, maskResult.getOverlay());
         }
         
         updateImpOverlay(imp);
+    }
+    
+    void updateOverlay() {
+        updateImpOverlay(getCurrentImp());
+    }
+    
+    void open() {
+        IJ.error("not yet implemented :(");
     }
 
     /**
