@@ -26,4 +26,8 @@ public class OverlayStack {
     public Overlay getOverlay(Integer ID) {
         return this.stackOverlays.get(ID);
     }
+    
+    public void clear() {
+        this.stackOverlays.clear();
+    }
 }

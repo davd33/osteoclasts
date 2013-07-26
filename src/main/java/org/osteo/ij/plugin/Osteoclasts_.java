@@ -268,6 +268,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      */
     void rmOverlays() {
         ImagePlus imp = getCurrentImp();
+        getOverlayStack(imp).clear();
         imp.setOverlay(null);
     }
 
