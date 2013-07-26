@@ -6,9 +6,8 @@ package org.osteo.ij.plugin;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.Overlay;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  *
@@ -16,16 +15,20 @@ import java.util.List;
  */
 public abstract class AbstractOsteoclasts {
     
-    private List<Overlay> stackOverlays;
+    private Map<ImagePlus, OverlayStack> overlayStackMap = new LinkedHashMap<ImagePlus, OverlayStack>();
     
-    protected List<Overlay> getStackOverlays() {
-        if (this.stackOverlays == null) {
-            this.stackOverlays = new ArrayList<Overlay>();
+    protected OverlayStack getOverlayStack(ImagePlus imp) {
+        if (!this.overlayStackMap.containsKey(imp)) {
+            this.overlayStackMap.put(imp, new OverlayStack());
         }
-        return this.stackOverlays;
+        return this.overlayStackMap.get(imp);
     }
 
     protected ImagePlus getCurrentImp() {
         return IJ.getImage();
+    }
+    
+    protected void updateImpOverlay(ImagePlus imp) {
+        imp.setOverlay(getOverlayStack(imp).getOverlay(imp.getSlice()));
     }
 }

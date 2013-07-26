@@ -1,7 +1,9 @@
 package org.osteo.ij.plugin;
 
 import ij.IJ;
+import ij.IJEventListener;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.measure.Measurements;
@@ -181,6 +183,15 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         miniWin.pack();
     }
 
+    /**
+     * Load classifier with thanks to the Advanced Weka Plugin from Ignacio
+     * Carreras.
+     *
+     * @param weka
+     * @param classifierPath
+     * @return
+     * @throws Exception
+     */
     private boolean loadClassifier(WekaSegmentation weka, String classifierPath)
             throws Exception {
         if (classifierPath == null || classifierPath.isEmpty()) {
@@ -248,7 +259,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             IJ.error(ex.getMessage());
         }
     }
-    
+
     /**
      * Will remove the overlay for the selected image.
      */
@@ -375,8 +386,14 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         os.add(pa_maxCirc);
         os.add(inc_bright);
 
-        ImagePlus maskResult = applyIPP(imp.duplicate(), os);
-        imp.setOverlay(maskResult.getOverlay());
+        ImagePlus maskResult;
+        ImageStack stack = imp.getStack();
+        for (int s = 1; s <= stack.getSize(); s++) {
+            maskResult = applyIPP(new ImagePlus(imp.getTitle(), stack.getProcessor(s)), os);
+            getOverlayStack(imp).put(s, maskResult.getOverlay());
+        }
+        
+        updateImpOverlay(imp);
     }
 
     /**
