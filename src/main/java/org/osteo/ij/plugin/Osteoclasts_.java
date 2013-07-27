@@ -93,6 +93,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         PA("Analyze Particles", "compute the final results and save them in a csv file"),
         CLASS("Run Classifier", "analyze the original images"),
         OVERLAYS("Compute Overlay", "analyze classified images"),
+        RES_DIR("Result Folder", "choose a directory where the results will be saved"),
         RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image"),
         UP_OVERLAYS("Update Overlay", "draw the overlay for the current image or slice");
         private String name;
@@ -100,6 +101,10 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
 
         public String getDesc() {
             return this.desc;
+        }
+        
+        public void setDesc(String desc) {
+            this.desc = desc;
         }
 
         public String getName() {
@@ -166,6 +171,8 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                     iow.setMethodToInvoke("rmOverlays");
                 } else if (source.getText().equals(Actions.UP_OVERLAYS.getName())) {
                     iow.setMethodToInvoke("updateOverlay");
+                } else if (source.getText().equals(Actions.RES_DIR.getName())) {
+                    iow.setMethodToInvoke("setResultDir");
                 }
 
                 iow.execute();
@@ -177,6 +184,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             actionButton.setToolTipText(action.getDesc());
             actionsPanel.add(actionButton, c);
             actionButton.addActionListener(actionListener);
+            registerButton(actionButton);
         }
 
         miniWinInfosPanel = new JPanel();
@@ -401,6 +409,10 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         updateImpOverlay(imp);
     }
     
+    /**
+     * For the current selected slice of a stack,
+     * displays the already computed overlay.
+     */
     void updateOverlay() {
         updateImpOverlay(getCurrentImp());
     }
@@ -408,15 +420,21 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     void open() {
         IJ.error("not yet implemented :(");
     }
-
+    
     /**
-     * After classification is corrected (by hand), runs the particle analysis
-     * and save the results in a csv file.
+     * Change the directory where 
+     * all result files (images, values...) 
+     * are saved.
      */
-    void pa() {
-        ImagePlus imp = getCurrentImp();
-        Overlay o = imp.getOverlay();
-
+    void setResultDir() {
+        String path = IJ.getDirectory("Choose a directory");
+        setResultsPath(path);
+        JButton button = getRegisteredButtonByText(Actions.RES_DIR.getName());
+        button.setToolTipText(path);
+        Actions.RES_DIR.setDesc(path);
+    }
+    
+    private ResultsTable applyPA(ImagePlus imp, Overlay o) {
         RoiManager rm = new RoiManager(true);
         for (int i = 0; i < o.size(); i++) {
             rm.addRoi(o.get(i));
@@ -444,11 +462,18 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 paResults,
                 0d, INFINITY, 0d, 1d);
         particleAnalyzer.analyze(mask);
+        
+        return paResults;
+    }
+    
+    private void savePA(ImagePlus imp, ResultsTable paResults, String path) {
         try {
-            String path = IJ.getFilePath("Where should the results be saved?");
             if (path != null) {
+                path += path.endsWith("/") ? "" : "/";
+                path += imp.getTitle();
+                path += ".csv";
+                
                 File file = new File(path);
-
                 if (file.exists()) {
                     boolean nonetheless = IJ.showMessageWithCancel(
                             "Save results...",
@@ -463,6 +488,26 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         } catch (IOException ex) {
             IJ.log("Unable to save the results file.");
             log(ex.getMessage());
+        }
+    }
+
+    /**
+     * After classification is corrected (by hand), runs the particle analysis
+     * and save the results in a csv file.
+     */
+    void pa() {
+        ImagePlus imp = getCurrentImp();
+        OverlayStack ovStack = getOverlayStack(imp);
+        ImageStack stack = imp.getStack();
+        for (int s = 1; s <= stack.getSize(); s++) {
+            IJ.showStatus(s+"/"+stack.getSize());
+            ImagePlus impFor = new ImagePlus(imp.getImageStack().getSliceLabel(s), stack.getProcessor(s));
+            Overlay o = ovStack.getOverlay(s);
+            String path = getResultsPath();
+            if (path == null) {
+                setResultDir();
+            }
+            savePA(imp, applyPA(impFor, o), path);
         }
     }
 
