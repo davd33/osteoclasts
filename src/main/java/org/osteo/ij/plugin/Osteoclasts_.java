@@ -501,13 +501,13 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         ImageStack stack = imp.getStack();
         for (int s = 1; s <= stack.getSize(); s++) {
             IJ.showStatus(s+"/"+stack.getSize());
-            ImagePlus impFor = new ImagePlus(imp.getImageStack().getSliceLabel(s), stack.getProcessor(s));
+            ImagePlus impFor = new ImagePlus(stack.getSliceLabel(s), stack.getProcessor(s));
             Overlay o = ovStack.getOverlay(s);
             String path = getResultsPath();
             if (path == null) {
                 setResultDir();
             }
-            savePA(imp, applyPA(impFor, o), path);
+            savePA(impFor, applyPA(impFor, o), path);
         }
     }
 
