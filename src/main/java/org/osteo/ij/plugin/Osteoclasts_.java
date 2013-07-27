@@ -440,6 +440,15 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      */
     void setResultDir() {
         String path = IJ.getDirectory("Choose a directory");
+
+        File f = new File(path);
+        if (f.listFiles().length > 0) {
+            IJ.showMessage(
+                    "Folder not empty",
+                    "\"" + f.getName() + "\" already contains files."
+                    + "\nThe plugin may override them.");
+        }
+
         setResultsPath(path);
         JButton button = getRegisteredButtonByText(Actions.RES_DIR.getName());
         button.setToolTipText(path);
@@ -485,17 +494,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 path += imp.getTitle();
                 path += ".csv";
 
-                File file = new File(path);
-                if (file.exists()) {
-                    boolean nonetheless = IJ.showMessageWithCancel(
-                            "Save results...",
-                            "\"" + file.getName() + "\" already exists.\nDo you want to replace it?");
-                    if (nonetheless) {
-                        paResults.saveAs(path);
-                    }
-                } else {
-                    paResults.saveAs(path);
-                }
+                paResults.saveAs(path);
             }
         } catch (IOException ex) {
             IJ.log("Unable to save the results file.");
