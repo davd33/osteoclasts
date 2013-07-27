@@ -59,6 +59,9 @@ public class ImageOperationsWorker extends SwingWorker<Object, Object> {
         String rgb = Integer.toHexString(OVERLAY_COLOR.getRGB());
         IJ.run("Overlay Options...", "stroke=#" + rgb + " width=2 fill=none apply");
         IJ.run("Labels...", "color=white font=9 show draw");
+        
+        pluginInstance.activateRegisteredButtons();
+        pluginInstance.logToMiniWin("done!");
     }
     
 }

@@ -50,6 +50,14 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     private final String paMaxCircName = "Particle analyzer max circularity";
     private final String incBright = "Increase Brightness";
     /**
+     * One instance for the plugin.
+     */
+    private static Osteoclasts_ instance;
+
+    public static Osteoclasts_ getInstance() {
+        return instance;
+    }
+    /**
      * Little window with a few buttons.
      */
     private static JFrame miniWin;
@@ -76,6 +84,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      */
     @Override
     public void run(String arg) {
+        instance = this;
         if (miniWin == null) {
             runMiniWin();
             logToMiniWin("Welcome Ana! ;)");
@@ -102,7 +111,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         public String getDesc() {
             return this.desc;
         }
-        
+
         public void setDesc(String desc) {
             this.desc = desc;
         }
@@ -132,11 +141,13 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      *
      * @param message
      */
-    private void logToMiniWin(final String message) {
+    public void logToMiniWin(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Osteoclasts_.this.miniWinInfosPanel.add(new JLabel(message));
-                Osteoclasts_.this.miniWinInfosPanel.updateUI();
+                JPanel mwip = Osteoclasts_.this.miniWinInfosPanel;
+                mwip.removeAll();
+                mwip.add(new JLabel(message));
+                mwip.updateUI();
                 miniWin.pack();
             }
         });
@@ -175,6 +186,8 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                     iow.setMethodToInvoke("setResultDir");
                 }
 
+                logToMiniWin("working...");
+                blockRegisteredButtons();
                 iow.execute();
             }
         };
@@ -401,30 +414,29 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         ImagePlus maskResult;
         ImageStack stack = imp.getStack();
         for (int s = 1; s <= stack.getSize(); s++) {
-            IJ.showStatus(s+"/"+stack.getSize());
+            IJ.showStatus(s + "/" + stack.getSize());
             maskResult = applyIPP(new ImagePlus(imp.getTitle(), stack.getProcessor(s)), os);
             getOverlayStack(imp).put(s, maskResult.getOverlay());
         }
-        
+
         updateImpOverlay(imp);
     }
-    
+
     /**
-     * For the current selected slice of a stack,
-     * displays the already computed overlay.
+     * For the current selected slice of a stack, displays the already computed
+     * overlay.
      */
     void updateOverlay() {
         updateImpOverlay(getCurrentImp());
     }
-    
+
     void open() {
         IJ.error("not yet implemented :(");
     }
-    
+
     /**
-     * Change the directory where 
-     * all result files (images, values...) 
-     * are saved.
+     * Change the directory where all result files (images, values...) are
+     * saved.
      */
     void setResultDir() {
         String path = IJ.getDirectory("Choose a directory");
@@ -433,7 +445,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         button.setToolTipText(path);
         Actions.RES_DIR.setDesc(path);
     }
-    
+
     private ResultsTable applyPA(ImagePlus imp, Overlay o) {
         RoiManager rm = new RoiManager(true);
         for (int i = 0; i < o.size(); i++) {
@@ -462,17 +474,17 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 paResults,
                 0d, INFINITY, 0d, 1d);
         particleAnalyzer.analyze(mask);
-        
+
         return paResults;
     }
-    
+
     private void savePA(ImagePlus imp, ResultsTable paResults, String path) {
         try {
             if (path != null) {
                 path += path.endsWith("/") ? "" : "/";
                 path += imp.getTitle();
                 path += ".csv";
-                
+
                 File file = new File(path);
                 if (file.exists()) {
                     boolean nonetheless = IJ.showMessageWithCancel(
@@ -500,7 +512,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         OverlayStack ovStack = getOverlayStack(imp);
         ImageStack stack = imp.getStack();
         for (int s = 1; s <= stack.getSize(); s++) {
-            IJ.showStatus(s+"/"+stack.getSize());
+            IJ.showStatus(s + "/" + stack.getSize());
             ImagePlus impFor = new ImagePlus(stack.getSliceLabel(s), stack.getProcessor(s));
             Overlay o = ovStack.getOverlay(s);
             String path = getResultsPath();

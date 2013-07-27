@@ -37,6 +37,20 @@ public abstract class AbstractOsteoclasts {
         }
         return null;
     }
+    
+    protected void blockRegisteredButtons() {
+        for (Iterator<JButton> bIt = buttons.iterator(); bIt.hasNext();) {
+            JButton button = bIt.next();
+            button.setEnabled(false);
+        }
+    }
+    
+    protected void activateRegisteredButtons() {
+        for (Iterator<JButton> bIt = buttons.iterator(); bIt.hasNext();) {
+            JButton button = bIt.next();
+            button.setEnabled(true);
+        }
+    }
 
     protected String getResultsPath() {
         if (this.resultsPath == null || !(new File(this.resultsPath)).exists()) {
