@@ -508,12 +508,20 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      */
     void pa() {
         ImagePlus imp = getCurrentImp();
+        String impTitle = imp.getTitle();
         OverlayStack ovStack = getOverlayStack(imp);
         ImageStack stack = imp.getStack();
-        for (int s = 1; s <= stack.getSize(); s++) {
-            IJ.showStatus(s + "/" + stack.getSize());
-            ImagePlus impFor = new ImagePlus(stack.getSliceLabel(s), stack.getProcessor(s));
+        int n = stack.getSize();
+        for (int s = 1; s <= n; s++) {
+            IJ.showStatus(s + "/" + n);
+            String sliceName = stack.getSliceLabel(s);
+            String fileName = n > 1 ? sliceName == null ? impTitle : sliceName : impTitle;
             Overlay o = ovStack.getOverlay(s);
+            if (o == null) {
+                IJ.log("no overlay: " + fileName);
+                continue;
+            }
+            ImagePlus impFor = new ImagePlus(fileName, stack.getProcessor(s));
             String path = getResultsPath();
             if (path == null) {
                 setResultDir();
