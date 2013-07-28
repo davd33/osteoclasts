@@ -63,6 +63,10 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     private static JFrame miniWin;
     private JPanel miniWinInfosPanel;
     /**
+     * 
+     */
+    private ImagePlus cpyOverlaysImpKey;
+    /**
      * One unique color for managing overlays.
      */
     public static final Color OVERLAY_COLOR = Color.magenta;
@@ -100,13 +104,25 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     private enum Actions {
 
         PA("Analyze Particles", "compute the final results and save them in a csv file"),
-        CLASS("Run Classifier", "analyze the original images"),
+        CLASS(false, "Run Classifier", "analyze the original images"),
         OVERLAYS("Compute Overlay", "analyze classified images"),
         RES_DIR("Result Folder", "choose a directory where the results will be saved"),
         RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image"),
-        UP_OVERLAYS("Update Overlay", "draw the overlay for the current image or slice");
+        UP_OVERLAYS("Update Overlay", "draw the overlay for the current image or slice"),
+        CPY_OVERLAYS("Copy Overlays", "copy overlays for pasting into other stacks or images"),
+        PASTE_OVERLAYS("Paste Overlays", "paste previously chosen overlays", false);
         private String name;
         private String desc;
+        private boolean visible;
+        private boolean enabled;
+        
+        public boolean isEnabled() {
+            return this.enabled;
+        }
+        
+        public boolean isVisible() {
+            return this.visible;
+        }
 
         public String getDesc() {
             return this.desc;
@@ -119,10 +135,30 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         public String getName() {
             return this.name;
         }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
 
         Actions(String name, String desc) {
             this.name = name;
             this.desc = desc;
+            this.visible = true;
+            this.enabled = true;
+        }
+        
+        Actions(String name, String desc, boolean display) {
+            this.name = name;
+            this.desc = desc;
+            this.visible = display;
+            this.enabled = true;
+        }
+        
+        Actions(boolean enabled, String name, String desc) {
+            this.name = name;
+            this.desc = desc;
+            this.visible = true;
+            this.enabled = enabled;
         }
     }
 
@@ -184,6 +220,10 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                     iow.setMethodToInvoke("updateOverlay");
                 } else if (source.getText().equals(Actions.RES_DIR.getName())) {
                     iow.setMethodToInvoke("setResultDir");
+                } else if (source.getText().equals(Actions.CPY_OVERLAYS.getName())) {
+                    iow.setMethodToInvoke("cpyOverlays");
+                } else if (source.getText().equals(Actions.PASTE_OVERLAYS.getName())) {
+                    iow.setMethodToInvoke("pasteOverlays");
                 }
 
                 logToMiniWin("working...");
@@ -193,11 +233,16 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         };
 
         for (Actions action : Actions.values()) {
-            JButton actionButton = new JButton(action.getName());
-            actionButton.setToolTipText(action.getDesc());
-            actionsPanel.add(actionButton, c);
-            actionButton.addActionListener(actionListener);
-            registerButton(actionButton);
+            if (action.isVisible()) {
+                JButton actionButton = new JButton(action.getName());
+                actionButton.setToolTipText(action.getDesc());
+                actionsPanel.add(actionButton, c);
+                actionButton.addActionListener(actionListener);
+                registerButton(actionButton);
+                if (!action.isEnabled()) {
+                    actionButton.setEnabled(false);
+                }
+            }
         }
 
         miniWinInfosPanel = new JPanel();
@@ -205,6 +250,26 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         miniWin.getContentPane().add(miniWinInfosPanel, BorderLayout.NORTH);
         miniWin.getContentPane().add(actionsPanel, BorderLayout.CENTER);
         miniWin.pack();
+    }
+    
+    /**
+     * Copy the list of overlays for 
+     * the current image or stack.
+     */
+    void cpyOverlays() {
+        this.cpyOverlaysImpKey = getCurrentImp();
+        JButton cpOvButton = getRegisteredButtonByText(Actions.CPY_OVERLAYS.getName());
+        cpOvButton.setText(Actions.PASTE_OVERLAYS.getName());
+        cpOvButton.setToolTipText(Actions.PASTE_OVERLAYS.getDesc());
+    }
+    
+    /**
+     * Paste the list of previous chosen overlays.
+     */
+    void pasteOverlays() {
+        ImagePlus imp = getCurrentImp();
+        getOverlayStack(imp).set(getOverlayStack(this.cpyOverlaysImpKey));
+        updateImpOverlay(imp);
     }
 
     /**

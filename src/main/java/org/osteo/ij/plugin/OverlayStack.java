@@ -23,6 +23,10 @@ public class OverlayStack {
         stackOverlays.put(ID, overlay);
     }
     
+    public void set(OverlayStack ovStack) {
+        this.stackOverlays = ovStack.stackOverlays;
+    }
+    
     public Overlay getOverlay(Integer ID) {
         return this.stackOverlays.get(ID);
     }
