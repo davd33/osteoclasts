@@ -2,6 +2,7 @@ package org.osteo.ij.plugin;
 
 import ij.IJ;
 import ij.IJEventListener;
+import ij.ImageListener;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Overlay;
@@ -231,7 +232,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 } else if (source.getText().equals(Actions.PASTE_OVERLAYS.getName())) {
                     iow.setMethodToInvoke("pasteOverlays");
                 } else if (source.getText().equals(Actions.OPEN_PROB.getName())) {
-                    iow.setMethodToInvoke("openPROBs");
+                    iow.setMethodToInvoke("open");
                 }
 
                 logToMiniWin("working...");
@@ -514,7 +515,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      * where the whiter a pixel, the bigger the probability to belong to the
      * osteoclast class.
      */
-    void openPROBs() throws Exception {
+    void open() throws Exception {
         String prb = IJ.getDirectory("select img directory");
         File dir = new File(prb);
         List<String> sortedFiles = new LinkedList<String>();
@@ -526,6 +527,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         for (int i = 0; i < sortedFiles.size(); i++) {
             int slice = i+1;
             imp = new ImagePlus(dir.getAbsoluteFile().getAbsolutePath() + "/" + sortedFiles.get(i));
+            IJ.showStatus(slice+"/"+sortedFiles.size());
             imp.getStack().deleteLastSlice();
             ims.addSlice(imp.getProcessor());
             ims.setSliceLabel(imp.getTitle(), slice);
