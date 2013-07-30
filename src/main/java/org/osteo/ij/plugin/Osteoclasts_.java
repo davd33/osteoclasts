@@ -188,7 +188,11 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         public JComponent getComponent() {
             try {
                 if (this.name != null) {
-                    return this.type.getDeclaredConstructor(String.class).newInstance(this.name);
+                    JComponent jc = this.type.getDeclaredConstructor(String.class).newInstance(this.name);
+                    jc.setToolTipText(this.desc);
+                    jc.setEnabled(this.enabled);
+                    jc.setVisible(this.visible);
+                    return jc;
                 } else {
                     return this.type.newInstance();
                 }
@@ -298,7 +302,6 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             JComponent action = jcIt.next();
 
             if (action.isVisible()) {
-                action.setToolTipText(action.getName());
                 
                 if (action instanceof JButton) {
                     actionsPanel.add(action, c);
