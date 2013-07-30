@@ -18,6 +18,7 @@ import ij.plugin.frame.RoiManager;
 import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -110,7 +111,8 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image"),
         UP_OVERLAYS("Update Overlay", "draw the overlay for the current image or slice"),
         CPY_OVERLAYS("Copy Overlays", "copy overlays for pasting into other stacks or images"),
-        PASTE_OVERLAYS("Paste Overlays", "paste previously chosen overlays", false);
+        PASTE_OVERLAYS("Paste Overlays", "paste previously chosen overlays", false),
+        OPEN_PROB("Open PROBs", "Open probability images yielded by the classifier");
         private String name;
         private String desc;
         private boolean visible;
@@ -224,6 +226,8 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                     iow.setMethodToInvoke("cpyOverlays");
                 } else if (source.getText().equals(Actions.PASTE_OVERLAYS.getName())) {
                     iow.setMethodToInvoke("pasteOverlays");
+                } else if (source.getText().equals(Actions.OPEN_PROB.getName())) {
+                    iow.setMethodToInvoke("openPROBs");
                 }
 
                 logToMiniWin("working...");
@@ -500,8 +504,27 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         updateImpOverlay(getCurrentImp());
     }
 
-    void open() {
-        IJ.error("not yet implemented :(");
+    /**
+     * Open PROBs images yielded by the classifier.
+     * Each of those images have two slices, but we 
+     * want to work with only one of them: the first 
+     * one, where the whiter a pixel, the bigger the 
+     * probability to belong to the osteoclast class.
+     */
+    void openPROBs() {
+        String prb = IJ.getDirectory("select img directory");
+        File dir = new File(prb);
+        String[] prbfiles = dir.list();
+
+        ImageStack ims = new ImageStack();
+        
+        for (int i = 0; i <= prbfiles.length; i++) {
+            ims.addSlice(new ImagePlus(dir.getAbsoluteFile().getAbsolutePath() + "/" + prbfiles[i]).getProcessor());
+        }
+        
+        ImagePlus imp = new ImagePlus();
+        imp.setStack(ims);
+        imp.show();
     }
 
     /**
