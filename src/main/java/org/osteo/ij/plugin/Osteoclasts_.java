@@ -617,7 +617,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         if (!f.exists()) {
             return false;
         } else if (f.listFiles().length > 0) {
-            if (IJ.showMessageWithCancel(
+            if (!IJ.showMessageWithCancel(
                     "Folder not empty",
                     "\"" + f.getName() + "\" already contains files."
                     + "\nThe plugin may override them.")) {
