@@ -29,6 +29,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -262,7 +266,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      */
     void cpyOverlays() {
         this.cpyOverlaysImpKey = getCurrentImp();
-        
+
         JButton cpOvButton = getRegisteredButtonByText(Actions.CPY_OVERLAYS.getName());
         cpOvButton.setText(Actions.PASTE_OVERLAYS.getName());
         cpOvButton.setToolTipText(Actions.PASTE_OVERLAYS.getDesc());
@@ -275,7 +279,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         ImagePlus imp = getCurrentImp();
         getOverlayStack(imp).set(getOverlayStack(this.cpyOverlaysImpKey));
         updateImpOverlay(imp);
-        
+
         JButton cpOvButton = getRegisteredButtonByText(Actions.PASTE_OVERLAYS.getName());
         cpOvButton.setText(Actions.CPY_OVERLAYS.getName());
         cpOvButton.setToolTipText(Actions.CPY_OVERLAYS.getDesc());
@@ -505,26 +509,29 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
     }
 
     /**
-     * Open PROBs images yielded by the classifier.
-     * Each of those images have two slices, but we 
-     * want to work with only one of them: the first 
-     * one, where the whiter a pixel, the bigger the 
-     * probability to belong to the osteoclast class.
+     * Open PROBs images yielded by the classifier. Each of those images have
+     * two slices, but we want to work with only one of them: the first one,
+     * where the whiter a pixel, the bigger the probability to belong to the
+     * osteoclast class.
      */
-    void openPROBs() {
+    void openPROBs() throws Exception {
         String prb = IJ.getDirectory("select img directory");
         File dir = new File(prb);
-        String[] prbfiles = dir.list();
-
-        ImageStack ims = new ImageStack();
+        List<String> sortedFiles = new LinkedList<String>();
+        sortedFiles.addAll(Arrays.asList(dir.list()));
+        Collections.sort(sortedFiles);
         
-        for (int i = 0; i <= prbfiles.length; i++) {
-            ims.addSlice(new ImagePlus(dir.getAbsoluteFile().getAbsolutePath() + "/" + prbfiles[i]).getProcessor());
+        ImagePlus imp = new ImagePlus(dir.getAbsoluteFile().getAbsolutePath() + "/" + sortedFiles.get(0));
+        ImageStack ims = new ImageStack(imp.getWidth(), imp.getHeight());
+        for (int i = 0; i < sortedFiles.size(); i++) {
+            int slice = i+1;
+            imp = new ImagePlus(dir.getAbsoluteFile().getAbsolutePath() + "/" + sortedFiles.get(i));
+            imp.getStack().deleteLastSlice();
+            ims.addSlice(imp.getProcessor());
+            ims.setSliceLabel(imp.getTitle(), slice);
         }
         
-        ImagePlus imp = new ImagePlus();
-        imp.setStack(ims);
-        imp.show();
+        (new ImagePlus(dir.getName(), ims)).show();
     }
 
     /**

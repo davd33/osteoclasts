@@ -47,7 +47,7 @@ public class ImageOperationsWorker extends SwingWorker<Object, Object> {
         } catch (NoSuchMethodException e) {
             System.err.println("method not found: " + this.methodToInvoke + "()");
         } catch (Exception e) {
-            System.err.println("Problem happend" + e.getMessage() == null ? "" : ": \n" + e.getMessage());
+            System.err.println("Problem happend" + (e.getMessage() == null ? "" : ": \n" + e.getMessage()));
         }
         return null;
     }
