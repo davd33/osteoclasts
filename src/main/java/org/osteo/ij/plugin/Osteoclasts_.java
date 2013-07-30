@@ -29,15 +29,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.osteo.ij.morph.GrayMorphology_;
 import trainableSegmentation.WekaSegmentation;
@@ -109,19 +117,25 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      */
     private enum Actions {
 
-        PA("Analyze Particles", "compute the final results and save them in a csv file"),
-        CLASS(false, "Run Classifier", "soon..."),
-        OVERLAYS("Compute Overlay", "analyze classified images"),
-        RES_DIR("Result Folder", "choose a directory where the results will be saved"),
-        RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image"),
-        UP_OVERLAYS("Update Overlay", "draw the overlay for the current image or slice"),
-        CPY_OVERLAYS("Copy Overlays", "copy overlays for pasting into other stacks or images"),
-        PASTE_OVERLAYS("Paste Overlays", "paste previously chosen overlays", false),
-        OPEN_PROB("Open Images", "Open images in a stack (PROB or original)");
+        SAVE_RESULTS("Save Results", "compute the final results and save them in a csv file", JButton.class),
+        SEPARATOR(null, null, JSeparator.class),
+        CLASSIFY(false, "Run Classifier", "soon...", JButton.class),
+        OVERLAYS("Compute Overlay", "analyze classified images", JButton.class),
+        RES_DIR("Result Folder", "choose a directory where the results will be saved", JButton.class),
+        RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image", JButton.class),
+        UP_OVERLAYS("Update Overlay", "draw the overlay for the current image or slice", JButton.class),
+        CPY_OVERLAYS("Copy Overlays", "copy overlays for pasting into other stacks or images", JButton.class),
+        PASTE_OVERLAYS("Paste Overlays", "paste previously chosen overlays", JButton.class, false),
+        OPEN_IMG("Open Images", "Open images in a stack (PROB or original)", JButton.class);
         private String name;
         private String desc;
         private boolean visible;
         private boolean enabled;
+        private Class<? extends JComponent> type;
+
+        public Class<? extends JComponent> getType() {
+            return this.type;
+        }
 
         public boolean isEnabled() {
             return this.enabled;
@@ -147,25 +161,51 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             this.name = name;
         }
 
-        Actions(String name, String desc) {
+        Actions(String name, String desc, Class<? extends JComponent> type) {
             this.name = name;
             this.desc = desc;
             this.visible = true;
             this.enabled = true;
+            this.type = type;
         }
 
-        Actions(String name, String desc, boolean display) {
+        Actions(String name, String desc, Class<? extends JComponent> type, boolean display) {
             this.name = name;
             this.desc = desc;
             this.visible = display;
             this.enabled = true;
+            this.type = type;
         }
 
-        Actions(boolean enabled, String name, String desc) {
+        Actions(boolean enabled, String name, String desc, Class<? extends JComponent> type) {
             this.name = name;
             this.desc = desc;
             this.visible = true;
             this.enabled = enabled;
+            this.type = type;
+        }
+
+        public JComponent getComponent() {
+            try {
+                if (this.name != null) {
+                    return this.type.getDeclaredConstructor(String.class).newInstance(this.name);
+                } else {
+                    return this.type.newInstance();
+                }
+            } catch (InstantiationException ex) {
+                Logger.getLogger(Osteoclasts_.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(Osteoclasts_.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchMethodException ex) {
+                Logger.getLogger(Osteoclasts_.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SecurityException ex) {
+                Logger.getLogger(Osteoclasts_.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(Osteoclasts_.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(Osteoclasts_.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return null;
         }
     }
 
@@ -203,7 +243,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         miniWin = new JFrame();
         miniWin.setLayout(new BorderLayout());
         miniWin.setVisible(true);
-        miniWin.setTitle("ღosteoclastsღ");
+        miniWin.setTitle("I ღ Osteo");
         miniWin.setResizable(false);
 
         final JPanel actionsPanel = new JPanel(new GridBagLayout());
@@ -216,9 +256,9 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 JButton source = (JButton) ae.getSource();
                 ImageOperationsWorker iow = new ImageOperationsWorker(Osteoclasts_.this);
 
-                if (source.getText().equals(Actions.PA.getName())) {
+                if (source.getText().equals(Actions.SAVE_RESULTS.getName())) {
                     iow.setMethodToInvoke("pa");
-                } else if (source.getText().equals(Actions.CLASS.getName())) {
+                } else if (source.getText().equals(Actions.CLASSIFY.getName())) {
                     iow.setMethodToInvoke("classify");
                 } else if (source.getText().equals(Actions.OVERLAYS.getName())) {
                     iow.setMethodToInvoke("overlays");
@@ -232,7 +272,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                     iow.setMethodToInvoke("cpyOverlays");
                 } else if (source.getText().equals(Actions.PASTE_OVERLAYS.getName())) {
                     iow.setMethodToInvoke("pasteOverlays");
-                } else if (source.getText().equals(Actions.OPEN_PROB.getName())) {
+                } else if (source.getText().equals(Actions.OPEN_IMG.getName())) {
                     iow.setMethodToInvoke("open");
                 }
 
@@ -242,16 +282,37 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             }
         };
 
-        for (Actions action : Actions.values()) {
+        List<JComponent> cList = new LinkedList<JComponent>();
+        cList.add(Actions.OPEN_IMG.getComponent());
+        cList.add(Actions.SAVE_RESULTS.getComponent());
+        cList.add(Actions.RES_DIR.getComponent());
+        cList.add(Actions.SEPARATOR.getComponent());
+        cList.add(Actions.OVERLAYS.getComponent());
+        cList.add(Actions.CPY_OVERLAYS.getComponent());
+        cList.add(Actions.UP_OVERLAYS.getComponent());
+        cList.add(Actions.RM_OVERLAYS.getComponent());
+        cList.add(Actions.SEPARATOR.getComponent());
+        cList.add(Actions.CLASSIFY.getComponent());
+
+        for (Iterator<JComponent> jcIt = cList.iterator(); jcIt.hasNext();) {
+            JComponent action = jcIt.next();
+
             if (action.isVisible()) {
-                JButton actionButton = new JButton(action.getName());
-                actionButton.setToolTipText(action.getDesc());
-                actionsPanel.add(actionButton, c);
-                actionButton.addActionListener(actionListener);
+                action.setToolTipText(action.getName());
+                
+                if (action instanceof JButton) {
+                    actionsPanel.add(action, c);
+                    ((JButton) action).addActionListener(actionListener);
+                } else if (action instanceof JSeparator) {
+                    actionsPanel.add(Box.createVerticalStrut(3), c);
+                    actionsPanel.add(action, c);
+                    actionsPanel.add(Box.createVerticalStrut(2), c);
+                }
+                
                 if (!action.isEnabled()) {
-                    actionButton.setEnabled(false);
-                } else {
-                    registerButton(actionButton);
+                    action.setEnabled(false);
+                } else if (action instanceof JButton) {
+                    registerButton((JButton) action);
                 }
             }
         }
@@ -522,20 +583,20 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         List<String> sortedFiles = new LinkedList<String>();
         sortedFiles.addAll(Arrays.asList(dir.list()));
         Collections.sort(sortedFiles);
-        
+
         ImagePlus imp = new ImagePlus(dir.getAbsoluteFile().getAbsolutePath() + "/" + sortedFiles.get(0));
         ImageStack ims = new ImageStack(imp.getWidth(), imp.getHeight());
         for (int i = 0; i < sortedFiles.size(); i++) {
-            int slice = i+1;
+            int slice = i + 1;
             imp = new ImagePlus(dir.getAbsoluteFile().getAbsolutePath() + "/" + sortedFiles.get(i));
-            IJ.showStatus(slice+"/"+sortedFiles.size());
+            IJ.showStatus(slice + "/" + sortedFiles.size());
             while (imp.getNSlices() > 1) {
                 imp.getStack().deleteLastSlice();
             }
             ims.addSlice(imp.getProcessor());
             ims.setSliceLabel(imp.getTitle(), slice);
         }
-        
+
         (new ImagePlus(dir.getName(), ims)).show();
     }
 
