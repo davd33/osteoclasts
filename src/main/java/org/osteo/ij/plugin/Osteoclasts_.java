@@ -607,21 +607,30 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
      * Change the directory where all result files (images, values...) are
      * saved.
      */
-    void setResultDir() {
+    boolean setResultDir() {
         String path = IJ.getDirectory("Choose a directory");
+        if (path == null) {
+            return false;
+        }
 
         File f = new File(path);
-        if (f.listFiles().length > 0) {
-            IJ.showMessage(
+        if (!f.exists()) {
+            return false;
+        } else if (f.listFiles().length > 0) {
+            if (IJ.showMessageWithCancel(
                     "Folder not empty",
                     "\"" + f.getName() + "\" already contains files."
-                    + "\nThe plugin may override them.");
+                    + "\nThe plugin may override them.")) {
+                return false;
+            }
         }
 
         setResultsPath(path);
         JButton button = getRegisteredButtonByText(Actions.RES_DIR.getName());
         button.setToolTipText(path);
         Actions.RES_DIR.setDesc(path);
+        
+        return true;
     }
 
     private ResultsTable applyPA(ImagePlus imp, Overlay o) {
@@ -693,7 +702,9 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             ImagePlus impFor = new ImagePlus(fileName, stack.getProcessor(s));
             String path = getResultsPath();
             if (path == null) {
-                setResultDir();
+                if (!setResultDir()) {
+                    return;
+                }
             }
             savePA(impFor, applyPA(impFor, o), path);
         }
