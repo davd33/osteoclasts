@@ -528,7 +528,9 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             int slice = i+1;
             imp = new ImagePlus(dir.getAbsoluteFile().getAbsolutePath() + "/" + sortedFiles.get(i));
             IJ.showStatus(slice+"/"+sortedFiles.size());
-            imp.getStack().deleteLastSlice();
+            while (imp.getNSlices() > 1) {
+                imp.getStack().deleteLastSlice();
+            }
             ims.addSlice(imp.getProcessor());
             ims.setSliceLabel(imp.getTitle(), slice);
         }
