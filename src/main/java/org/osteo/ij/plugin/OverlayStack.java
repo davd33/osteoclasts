@@ -5,6 +5,7 @@
 package org.osteo.ij.plugin;
 
 import ij.gui.Overlay;
+import ij.gui.Roi;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -20,6 +21,11 @@ public class OverlayStack {
     }
 
     public void put(Integer ID, Overlay overlay) {
+        if (overlay != null) {
+            for (Roi roi : overlay.toArray()) {
+                roi.setPosition(ID);
+            }
+        }
         stackOverlays.put(ID, overlay);
     }
 
