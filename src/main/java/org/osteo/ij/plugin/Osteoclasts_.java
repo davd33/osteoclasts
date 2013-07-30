@@ -204,6 +204,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         miniWin.setLayout(new BorderLayout());
         miniWin.setVisible(true);
         miniWin.setTitle("ღosteoclastsღ");
+        miniWin.setResizable(false);
 
         final JPanel actionsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
