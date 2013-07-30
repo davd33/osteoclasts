@@ -116,7 +116,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         UP_OVERLAYS("Update Overlay", "draw the overlay for the current image or slice"),
         CPY_OVERLAYS("Copy Overlays", "copy overlays for pasting into other stacks or images"),
         PASTE_OVERLAYS("Paste Overlays", "paste previously chosen overlays", false),
-        OPEN_PROB("Open PROBs", "Open probability images yielded by the classifier");
+        OPEN_PROB("Open Images", "Open images in a stack (PROB or original)");
         private String name;
         private String desc;
         private boolean visible;
