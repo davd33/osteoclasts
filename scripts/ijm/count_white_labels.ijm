@@ -4,6 +4,7 @@ function fscores() {
 	dirName = dirSplit[dirSplit.length-1];
 	files = getFileList(dir);
 	run("Image Sequence...", "open=["+dir+files[0]+"] number="+files.length+" starting=1 increment=1 scale=100 file=[] or=[] sort");
+	rename(dirName + str_ostwin);
 	
 	run("Gray Morphology", "radius=2 type=circle operator=dilate");
 	run("Invert LUT");
@@ -12,8 +13,9 @@ function fscores() {
 	labelsResults = newArray();
 	for (i = 1; i <= nSlices; i++) {
 		Stack.setPosition(1,i,1);
-		run("Analyze Particles...", "size=50-Infinity circularity=0.00-1.00 show=Nothing clear include in_situ");
+		run("Analyze Particles...", "size=0-Infinity circularity=0.00-1.00 show=Nothing clear include in_situ");
 		labelsResults = Array.concat(labelsResults, nResults);
+		print(nResults);
 	}
 
 	dirSeg = getDirectory(str_maskdir);
@@ -21,8 +23,9 @@ function fscores() {
 	dirSegName = dirSegSplit[dirSegSplit.length-1];
 	filesSeg = getFileList(dirSeg);
 	run("Image Sequence...", "open=["+dirSeg+filesSeg[0]+"] number="+filesSeg.length+" starting=1 increment=1 scale=100 file=[] or=[] sort");
+	rename(dirSegName + str_maskwin);
 
-	imageCalculator("AND create stack", dirName, dirSegName);
+	imageCalculator("AND create stack", dirName + str_ostwin, dirSegName + str_maskwin);
 	run("Gray Morphology", "radius=4 type=circle operator=dilate");
 	run("Gray Morphology", "radius=2 type=circle operator=erode");
 
@@ -35,8 +38,8 @@ function fscores() {
 		results = Array.concat(results, nResults);
 	}
 
-	close(dirName);
-	close(dirSegName);
+	close(dirName + str_ostwin);
+	close(dirSegName + str_maskwin);
 
 	// false positive
 	resultsCrossingNegLabels = rmCrossingNegLabels(dir, dirSeg);
@@ -56,9 +59,9 @@ function fscores() {
 	// save final computed results
 	saveAs("Results", getDirectory("save fscore data") + "fscores.csv");
 
-	close(dirName);
-	close(dirSegName);
-	close("Result of " + dirName);
+	close(dirName + str_ostwin);
+	close(dirSegName + str_maskwin);
+	close("Result of " + dirName + str_ostwin);
 }
 
 function getObject(x, y) {
@@ -130,27 +133,29 @@ function rmCrossingNegLabels(ost, mask) {
 	ostName = ostSplit[ostSplit.length-1];
 	files = getFileList(ost);
 	run("Image Sequence...", "open=["+ost+files[0]+"] number="+files.length+" starting=1 increment=1 scale=100 file=[] or=[] sort");
+	rename(ostName + str_ostwin);
 	
 	maskSplit = split(mask, File.separator);
 	maskName = maskSplit[maskSplit.length-1];
 	files = getFileList(mask);
 	run("Image Sequence...", "open=["+mask+files[0]+"] number="+files.length+" starting=1 increment=1 scale=100 file=[] or=[] sort");
+	rename(maskName + str_maskwin);
 	run("Invert LUT");
 	
 	setBatchMode(true);
 	for (stacki = 1; stacki <= nSlices; stacki++) {
 		
-		selectImage(ostName);
+		selectImage(ostName + str_ostwin);
 		Stack.setPosition(1,stacki,1);
 		len = getHeight() * getWidth();
 		for (i = 0; i < len; i++) {
-			selectImage(ostName);
+			selectImage(ostName + str_ostwin);
 			ostX = i % getWidth();
 			ostY = floor(i / getWidth());
 			ostValue = getPixel(ostX, ostY);
 	
 			if (ostValue == 255) {
-				selectImage(maskName);
+				selectImage(maskName + str_maskwin);
 				Stack.setPosition(1,stacki,1);
 				maskValue = getPixel(ostX, ostY);
 				if (maskValue == 255) {
@@ -162,7 +167,7 @@ function rmCrossingNegLabels(ost, mask) {
 		}
 	}
 
-	selectImage(maskName);
+	selectImage(maskName + str_maskwin);
 	run("Invert LUT");
 	results = newArray();
 	for (stacki = 0; stacki <= nSlices; stacki++) {
@@ -176,8 +181,18 @@ function rmCrossingNegLabels(ost, mask) {
 	return results;
 }
 
+function openDir(message) {
+	dir = getDirectory(message);
+	dirSplit = split(dir, File.separator);
+	dirName = dirSplit[dirSplit.length-1];
+	files = getFileList(dir);
+	run("Image Sequence...", "open=["+dir+files[0]+"] number="+files.length+" starting=1 increment=1 scale=100 file=[] or=[] sort");
+}
+
 _debug = false;
 str_maskdir = "select mask's directory";
 str_ostdir = "select ost binary's directory";
+str_ostwin = "_ost";
+str_maskwin = "_mask";
 
 fscores();
