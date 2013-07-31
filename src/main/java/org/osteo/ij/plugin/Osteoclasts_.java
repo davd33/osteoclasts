@@ -672,7 +672,12 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 path += imp.getTitle();
                 path += ".csv";
 
-                paResults.saveAs(path);
+                if (paResults == null) {
+                    File f = new File(path);
+                    f.createNewFile();
+                } else {
+                    paResults.saveAs(path);
+                }
             }
         } catch (IOException ex) {
             IJ.log("Unable to save the results file.");
@@ -695,16 +700,17 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             String sliceName = stack.getSliceLabel(s);
             String fileName = n > 1 ? sliceName == null ? impTitle : sliceName : impTitle;
             Overlay o = ovStack.getOverlay(s);
-            if (o == null) {
-                IJ.log("no overlay: " + fileName);
-                continue;
-            }
             ImagePlus impFor = new ImagePlus(fileName, stack.getProcessor(s));
             String path = getResultsPath();
             if (path == null) {
                 if (!setResultDir()) {
                     return;
                 }
+            }
+            if (o == null) {
+                IJ.log("no overlay: " + fileName);
+                savePA(impFor, null, path);
+                continue;
             }
             savePA(impFor, applyPA(impFor, o), path);
         }
