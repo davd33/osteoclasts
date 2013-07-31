@@ -1,8 +1,6 @@
 package org.osteo.ij.plugin;
 
 import ij.IJ;
-import ij.IJEventListener;
-import ij.ImageListener;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Overlay;
@@ -19,7 +17,6 @@ import ij.plugin.frame.RoiManager;
 import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
-import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,10 +26,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -48,7 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.osteo.ij.morph.GrayMorphology_;
-import trainableSegmentation.WekaSegmentation;
+//import trainableSegmentation.WekaSegmentation;
 
 /**
  * Supplies all the features for classifying and quantifying osteoclast images.
@@ -263,7 +258,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 if (source.getText().equals(Actions.SAVE_RESULTS.getName())) {
                     iow.setMethodToInvoke("pa");
                 } else if (source.getText().equals(Actions.CLASSIFY.getName())) {
-                    iow.setMethodToInvoke("classify");
+//                    iow.setMethodToInvoke("classify");
                 } else if (source.getText().equals(Actions.OVERLAYS.getName())) {
                     iow.setMethodToInvoke("overlays");
                 } else if (source.getText().equals(Actions.RM_OVERLAYS.getName())) {
@@ -351,82 +346,82 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         cpOvButton.setToolTipText(Actions.CPY_OVERLAYS.getDesc());
     }
 
-    /**
-     * Load classifier with thanks to the Advanced Weka Plugin from Ignacio
-     * Carreras.
-     *
-     * @param weka
-     * @param classifierPath
-     * @return
-     * @throws Exception
-     */
-    private boolean loadClassifier(WekaSegmentation weka, String classifierPath)
-            throws Exception {
-        if (classifierPath == null || classifierPath.isEmpty()) {
-            throw new Exception("No classifier file specified!");
-        }
+//    /**
+//     * Load classifier with thanks to the Advanced Weka Plugin from Ignacio
+//     * Carreras.
+//     *
+//     * @param weka
+//     * @param classifierPath
+//     * @return
+//     * @throws Exception
+//     */
+//    private boolean loadClassifier(WekaSegmentation weka, String classifierPath)
+//            throws Exception {
+//        if (classifierPath == null || classifierPath.isEmpty()) {
+//            throw new Exception("No classifier file specified!");
+//        }
+//
+//        IJ.log("Loading Weka classifier from " + classifierPath + "...");
+//        // Try to load Weka model (classifier and train header)
+//        System.gc();
+//        if (!weka.loadClassifier(classifierPath)) {
+//            throw new Exception(
+//                    "Error when loading Weka classifier from file");
+//        }
+//
+//        IJ.log("Read header from " + classifierPath
+//                + " (number of attributes = "
+//                + weka.getTrainHeader().numAttributes() + ")");
+//        if (weka.getTrainHeader().numAttributes() < 1) {
+//            throw new Exception(
+//                    "Error: No attributes were found on the model header");
+//        }
+//
+//        IJ.log("Loaded " + classifierPath);
+//        return true;
+//    }
 
-        IJ.log("Loading Weka classifier from " + classifierPath + "...");
-        // Try to load Weka model (classifier and train header)
-        System.gc();
-        if (!weka.loadClassifier(classifierPath)) {
-            throw new Exception(
-                    "Error when loading Weka classifier from file");
-        }
-
-        IJ.log("Read header from " + classifierPath
-                + " (number of attributes = "
-                + weka.getTrainHeader().numAttributes() + ")");
-        if (weka.getTrainHeader().numAttributes() < 1) {
-            throw new Exception(
-                    "Error: No attributes were found on the model header");
-        }
-
-        IJ.log("Loaded " + classifierPath);
-        return true;
-    }
-
-    /**
-     * Run the classifier on selected image.
-     */
-    void classify() {
-        try {
-            ImagePlus imp = getCurrentImp();
-
-            String classifierPath = IJ.getFilePath("Tell me please, where the classifier is.");
-
-            if (imp.getProcessor().getNChannels() != 3) {
-                IJ.error("The script can be processed only on RGB images.");
-                return;
-            }
-
-            WekaSegmentation weka = new WekaSegmentation();
-//            weka.setTrainingImage(imp);
-            if (loadClassifier(weka, classifierPath)) {
-                weka.applyClassifier(0, true);
-                ImagePlus result = weka.getClassifiedImage();
-
-
-                String path = IJ.getFilePath("Where should the results be saved?");
-                if (path != null) {
-                    File file = new File(path);
-
-                    if (file.exists()) {
-                        boolean nonetheless = IJ.showMessageWithCancel(
-                                "Save results...",
-                                "\"" + file.getName() + "\" already exists.\nDo you want to replace it?");
-                        if (nonetheless) {
-                            IJ.saveAs(result, "Tiff", path);
-                        }
-                    } else {
-                        IJ.saveAs(result, "Tiff", path);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            IJ.error(ex.getMessage());
-        }
-    }
+//    /**
+//     * Run the classifier on selected image.
+//     */
+//    void classify() {
+//        try {
+//            ImagePlus imp = getCurrentImp();
+//
+//            String classifierPath = IJ.getFilePath("Tell me please, where the classifier is.");
+//
+//            if (imp.getProcessor().getNChannels() != 3) {
+//                IJ.error("The script can be processed only on RGB images.");
+//                return;
+//            }
+//
+//            WekaSegmentation weka = new WekaSegmentation();
+////            weka.setTrainingImage(imp);
+//            if (loadClassifier(weka, classifierPath)) {
+//                weka.applyClassifier(0, true);
+//                ImagePlus result = weka.getClassifiedImage();
+//
+//
+//                String path = IJ.getFilePath("Where should the results be saved?");
+//                if (path != null) {
+//                    File file = new File(path);
+//
+//                    if (file.exists()) {
+//                        boolean nonetheless = IJ.showMessageWithCancel(
+//                                "Save results...",
+//                                "\"" + file.getName() + "\" already exists.\nDo you want to replace it?");
+//                        if (nonetheless) {
+//                            IJ.saveAs(result, "Tiff", path);
+//                        }
+//                    } else {
+//                        IJ.saveAs(result, "Tiff", path);
+//                    }
+//                }
+//            }
+//        } catch (Exception ex) {
+//            IJ.error(ex.getMessage());
+//        }
+//    }
 
     /**
      * Will remove the overlay for the selected image.
