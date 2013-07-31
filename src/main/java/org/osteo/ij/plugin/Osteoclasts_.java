@@ -100,7 +100,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         instance = this;
         if (miniWin == null) {
             runMiniWin();
-            logToMiniWin("Welcome Ana! ;)");
+            logToMiniWin("Hello there! ;)");
         } else {
             miniWin.setVisible(true);
             miniWin.requestFocus();
