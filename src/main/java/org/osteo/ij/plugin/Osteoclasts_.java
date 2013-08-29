@@ -43,6 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.osteo.ij.morph.GrayMorphology_;
+import trainableSegmentation.WekaSegmentation;
 //import trainableSegmentation.WekaSegmentation;
 
 /**
@@ -114,7 +115,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
 
         SAVE_RESULTS("Save Results", "compute the final results and save them in a csv file", JButton.class),
         SEPARATOR(null, null, JSeparator.class),
-        CLASSIFY(false, "Run Classifier", "soon...", JButton.class),
+        CLASSIFY("Run Classifier", "soon...", JButton.class),
         OVERLAYS("Compute Overlay", "analyze classified images", JButton.class),
         RES_DIR("Result Folder", "choose a directory where the results will be saved", JButton.class),
         RM_OVERLAYS("Reset Overlay", "delete all ROIs in the selected image", JButton.class),
@@ -258,7 +259,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                 if (source.getText().equals(Actions.SAVE_RESULTS.getName())) {
                     iow.setMethodToInvoke("pa");
                 } else if (source.getText().equals(Actions.CLASSIFY.getName())) {
-//                    iow.setMethodToInvoke("classify");
+                    iow.setMethodToInvoke("classify");
                 } else if (source.getText().equals(Actions.OVERLAYS.getName())) {
                     iow.setMethodToInvoke("overlays");
                 } else if (source.getText().equals(Actions.RM_OVERLAYS.getName())) {
@@ -297,7 +298,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
             JComponent action = jcIt.next();
 
             if (action.isVisible()) {
-                
+
                 if (action instanceof JButton) {
                     actionsPanel.add(action, c);
                     ((JButton) action).addActionListener(actionListener);
@@ -306,7 +307,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
                     actionsPanel.add(action, c);
                     actionsPanel.add(Box.createVerticalStrut(2), c);
                 }
-                
+
                 if (!action.isEnabled()) {
                     action.setEnabled(false);
                 } else if (action instanceof JButton) {
@@ -346,82 +347,46 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         cpOvButton.setToolTipText(Actions.CPY_OVERLAYS.getDesc());
     }
 
-//    /**
-//     * Load classifier with thanks to the Advanced Weka Plugin from Ignacio
-//     * Carreras.
-//     *
-//     * @param weka
-//     * @param classifierPath
-//     * @return
-//     * @throws Exception
-//     */
-//    private boolean loadClassifier(WekaSegmentation weka, String classifierPath)
-//            throws Exception {
-//        if (classifierPath == null || classifierPath.isEmpty()) {
-//            throw new Exception("No classifier file specified!");
-//        }
-//
-//        IJ.log("Loading Weka classifier from " + classifierPath + "...");
-//        // Try to load Weka model (classifier and train header)
-//        System.gc();
-//        if (!weka.loadClassifier(classifierPath)) {
-//            throw new Exception(
-//                    "Error when loading Weka classifier from file");
-//        }
-//
-//        IJ.log("Read header from " + classifierPath
-//                + " (number of attributes = "
-//                + weka.getTrainHeader().numAttributes() + ")");
-//        if (weka.getTrainHeader().numAttributes() < 1) {
-//            throw new Exception(
-//                    "Error: No attributes were found on the model header");
-//        }
-//
-//        IJ.log("Loaded " + classifierPath);
-//        return true;
-//    }
+    /**
+     * Run the classifier on selected image.
+     */
+    void classify() {
+        try {
+            ImagePlus imp = getCurrentImp();
 
-//    /**
-//     * Run the classifier on selected image.
-//     */
-//    void classify() {
-//        try {
-//            ImagePlus imp = getCurrentImp();
-//
-//            String classifierPath = IJ.getFilePath("Tell me please, where the classifier is.");
-//
-//            if (imp.getProcessor().getNChannels() != 3) {
-//                IJ.error("The script can be processed only on RGB images.");
-//                return;
-//            }
-//
-//            WekaSegmentation weka = new WekaSegmentation();
-////            weka.setTrainingImage(imp);
-//            if (loadClassifier(weka, classifierPath)) {
-//                weka.applyClassifier(0, true);
-//                ImagePlus result = weka.getClassifiedImage();
-//
-//
-//                String path = IJ.getFilePath("Where should the results be saved?");
-//                if (path != null) {
-//                    File file = new File(path);
-//
-//                    if (file.exists()) {
-//                        boolean nonetheless = IJ.showMessageWithCancel(
-//                                "Save results...",
-//                                "\"" + file.getName() + "\" already exists.\nDo you want to replace it?");
-//                        if (nonetheless) {
-//                            IJ.saveAs(result, "Tiff", path);
-//                        }
-//                    } else {
-//                        IJ.saveAs(result, "Tiff", path);
-//                    }
-//                }
-//            }
-//        } catch (Exception ex) {
-//            IJ.error(ex.getMessage());
-//        }
-//    }
+            String classifierPath = IJ.getFilePath("Tell me please, where the classifier is.");
+
+            if (imp.getProcessor().getNChannels() != 3) {
+                IJ.error("The script can be processed only on RGB images.");
+                return;
+            }
+
+            WekaSegmentation segmentator = new WekaSegmentation(imp);
+            segmentator.getFeatureStackArray().setOldColorFormat(true);
+            segmentator.loadClassifier(classifierPath);
+            segmentator.applyClassifier(0, true);
+            ImagePlus result = segmentator.getClassifiedImage();
+            result.show();
+
+            String path = IJ.getFilePath("Where should the results be saved?");
+            if (path != null) {
+                File file = new File(path);
+
+                if (file.exists()) {
+                    boolean nonetheless = IJ.showMessageWithCancel(
+                            "Save results...",
+                            "\"" + file.getName() + "\" already exists.\nDo you want to replace it?");
+                    if (nonetheless) {
+                        IJ.saveAs(result, "Tiff", path);
+                    }
+                } else {
+                    IJ.saveAs(result, "Tiff", path);
+                }
+            }
+        } catch (Exception ex) {
+            IJ.error(ex.getMessage());
+        }
+    }
 
     /**
      * Will remove the overlay for the selected image.
@@ -624,7 +589,7 @@ public class Osteoclasts_ extends AbstractOsteoclasts implements PlugIn {
         JButton button = getRegisteredButtonByText(Actions.RES_DIR.getName());
         button.setToolTipText(path);
         Actions.RES_DIR.setDesc(path);
-        
+
         return true;
     }
 
