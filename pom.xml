@@ -13,8 +13,23 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <imagej.path>C:\Users\davd\Documents\Fiji.app</imagej.path>
+        <imagej.path>/home/letti/Fiji.app</imagej.path>
+        <imagej.version>1.48p</imagej.version>
     </properties>
+    
+    <parent>
+        <groupId>org.scijava</groupId>
+        <artifactId>pom-scijava</artifactId>
+        <version>1.15</version>
+    </parent>
+
+    <repositories>
+        <!-- NB: for project parent -->
+        <repository>
+            <id>imagej.releases</id>
+            <url>http://maven.imagej.net/content/repositories/releases</url>
+        </repository>
+    </repositories>
   
     <build>
         <finalName>${project.artifactId}_${project.version}</finalName>
@@ -32,7 +47,7 @@
                 </executions>
                 <configuration>
                     <executable>java</executable>
-                    <commandlineArgs>-jar -Xmx2g -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} "${imagej.path}\jars\ij-1.48b.jar"</commandlineArgs>
+                    <commandlineArgs>-jar -Xmx2g -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} "${imagej.path}/jars/ij-${imagej.version}.jar"</commandlineArgs>
                     <workingDirectory>${imagej.path}</workingDirectory>
                 </configuration>
             </plugin>
@@ -65,11 +80,6 @@
             <artifactId>junit</artifactId>
             <version>3.8.1</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>gov.nih.imagej</groupId>
-            <artifactId>imagej</artifactId>
-            <version>1.47</version>
         </dependency>
         <dependency>
             <groupId>sc.fiji</groupId>
